@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- OEKO is a frontend-only client preview: route pages share a single interactive demo workspace and local in-memory data, because the request excludes backend implementation.
