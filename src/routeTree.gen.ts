@@ -10,33 +10,219 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ArticlesRouteImport } from './routes/articles'
+import { Route as DevisRouteImport } from './routes/devis'
+import { Route as DossiersRouteImport } from './routes/dossiers'
+import { Route as IntegrationsRouteImport } from './routes/integrations'
+import { Route as JournalRouteImport } from './routes/journal'
+import { Route as JourneeRouteImport } from './routes/journee'
+import { Route as MarketingRouteImport } from './routes/marketing'
+import { Route as MediathequeRouteImport } from './routes/mediatheque'
+import { Route as ParametresRouteImport } from './routes/parametres'
+import { Route as PerformanceRouteImport } from './routes/performance'
+import { Route as PlanningRouteImport } from './routes/planning'
+import { Route as QualificationRouteImport } from './routes/qualification'
+import { Route as RealisationsRouteImport } from './routes/realisations'
+import { Route as ServicesRouteImport } from './routes/services'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ArticlesRoute = ArticlesRouteImport.update({
+  id: '/articles',
+  path: '/articles',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevisRoute = DevisRouteImport.update({
+  id: '/devis',
+  path: '/devis',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DossiersRoute = DossiersRouteImport.update({
+  id: '/dossiers',
+  path: '/dossiers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntegrationsRoute = IntegrationsRouteImport.update({
+  id: '/integrations',
+  path: '/integrations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JournalRoute = JournalRouteImport.update({
+  id: '/journal',
+  path: '/journal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JourneeRoute = JourneeRouteImport.update({
+  id: '/journee',
+  path: '/journee',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketingRoute = MarketingRouteImport.update({
+  id: '/marketing',
+  path: '/marketing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MediathequeRoute = MediathequeRouteImport.update({
+  id: '/mediatheque',
+  path: '/mediatheque',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParametresRoute = ParametresRouteImport.update({
+  id: '/parametres',
+  path: '/parametres',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerformanceRoute = PerformanceRouteImport.update({
+  id: '/performance',
+  path: '/performance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanningRoute = PlanningRouteImport.update({
+  id: '/planning',
+  path: '/planning',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QualificationRoute = QualificationRouteImport.update({
+  id: '/qualification',
+  path: '/qualification',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RealisationsRoute = RealisationsRouteImport.update({
+  id: '/realisations',
+  path: '/realisations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesRoute = ServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/articles': typeof ArticlesRoute
+  '/devis': typeof DevisRoute
+  '/dossiers': typeof DossiersRoute
+  '/integrations': typeof IntegrationsRoute
+  '/journal': typeof JournalRoute
+  '/journee': typeof JourneeRoute
+  '/marketing': typeof MarketingRoute
+  '/mediatheque': typeof MediathequeRoute
+  '/parametres': typeof ParametresRoute
+  '/performance': typeof PerformanceRoute
+  '/planning': typeof PlanningRoute
+  '/qualification': typeof QualificationRoute
+  '/realisations': typeof RealisationsRoute
+  '/services': typeof ServicesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/articles': typeof ArticlesRoute
+  '/devis': typeof DevisRoute
+  '/dossiers': typeof DossiersRoute
+  '/integrations': typeof IntegrationsRoute
+  '/journal': typeof JournalRoute
+  '/journee': typeof JourneeRoute
+  '/marketing': typeof MarketingRoute
+  '/mediatheque': typeof MediathequeRoute
+  '/parametres': typeof ParametresRoute
+  '/performance': typeof PerformanceRoute
+  '/planning': typeof PlanningRoute
+  '/qualification': typeof QualificationRoute
+  '/realisations': typeof RealisationsRoute
+  '/services': typeof ServicesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/articles': typeof ArticlesRoute
+  '/devis': typeof DevisRoute
+  '/dossiers': typeof DossiersRoute
+  '/integrations': typeof IntegrationsRoute
+  '/journal': typeof JournalRoute
+  '/journee': typeof JourneeRoute
+  '/marketing': typeof MarketingRoute
+  '/mediatheque': typeof MediathequeRoute
+  '/parametres': typeof ParametresRoute
+  '/performance': typeof PerformanceRoute
+  '/planning': typeof PlanningRoute
+  '/qualification': typeof QualificationRoute
+  '/realisations': typeof RealisationsRoute
+  '/services': typeof ServicesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/articles'
+    | '/devis'
+    | '/dossiers'
+    | '/integrations'
+    | '/journal'
+    | '/journee'
+    | '/marketing'
+    | '/mediatheque'
+    | '/parametres'
+    | '/performance'
+    | '/planning'
+    | '/qualification'
+    | '/realisations'
+    | '/services'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/articles'
+    | '/devis'
+    | '/dossiers'
+    | '/integrations'
+    | '/journal'
+    | '/journee'
+    | '/marketing'
+    | '/mediatheque'
+    | '/parametres'
+    | '/performance'
+    | '/planning'
+    | '/qualification'
+    | '/realisations'
+    | '/services'
+  id:
+    | '__root__'
+    | '/'
+    | '/articles'
+    | '/devis'
+    | '/dossiers'
+    | '/integrations'
+    | '/journal'
+    | '/journee'
+    | '/marketing'
+    | '/mediatheque'
+    | '/parametres'
+    | '/performance'
+    | '/planning'
+    | '/qualification'
+    | '/realisations'
+    | '/services'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ArticlesRoute: typeof ArticlesRoute
+  DevisRoute: typeof DevisRoute
+  DossiersRoute: typeof DossiersRoute
+  IntegrationsRoute: typeof IntegrationsRoute
+  JournalRoute: typeof JournalRoute
+  JourneeRoute: typeof JourneeRoute
+  MarketingRoute: typeof MarketingRoute
+  MediathequeRoute: typeof MediathequeRoute
+  ParametresRoute: typeof ParametresRoute
+  PerformanceRoute: typeof PerformanceRoute
+  PlanningRoute: typeof PlanningRoute
+  QualificationRoute: typeof QualificationRoute
+  RealisationsRoute: typeof RealisationsRoute
+  ServicesRoute: typeof ServicesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +234,123 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/articles': {
+      id: '/articles'
+      path: '/articles'
+      fullPath: '/articles'
+      preLoaderRoute: typeof ArticlesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/devis': {
+      id: '/devis'
+      path: '/devis'
+      fullPath: '/devis'
+      preLoaderRoute: typeof DevisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dossiers': {
+      id: '/dossiers'
+      path: '/dossiers'
+      fullPath: '/dossiers'
+      preLoaderRoute: typeof DossiersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/integrations': {
+      id: '/integrations'
+      path: '/integrations'
+      fullPath: '/integrations'
+      preLoaderRoute: typeof IntegrationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/journal': {
+      id: '/journal'
+      path: '/journal'
+      fullPath: '/journal'
+      preLoaderRoute: typeof JournalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/journee': {
+      id: '/journee'
+      path: '/journee'
+      fullPath: '/journee'
+      preLoaderRoute: typeof JourneeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketing': {
+      id: '/marketing'
+      path: '/marketing'
+      fullPath: '/marketing'
+      preLoaderRoute: typeof MarketingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mediatheque': {
+      id: '/mediatheque'
+      path: '/mediatheque'
+      fullPath: '/mediatheque'
+      preLoaderRoute: typeof MediathequeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parametres': {
+      id: '/parametres'
+      path: '/parametres'
+      fullPath: '/parametres'
+      preLoaderRoute: typeof ParametresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/performance': {
+      id: '/performance'
+      path: '/performance'
+      fullPath: '/performance'
+      preLoaderRoute: typeof PerformanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/planning': {
+      id: '/planning'
+      path: '/planning'
+      fullPath: '/planning'
+      preLoaderRoute: typeof PlanningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/qualification': {
+      id: '/qualification'
+      path: '/qualification'
+      fullPath: '/qualification'
+      preLoaderRoute: typeof QualificationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/realisations': {
+      id: '/realisations'
+      path: '/realisations'
+      fullPath: '/realisations'
+      preLoaderRoute: typeof RealisationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services': {
+      id: '/services'
+      path: '/services'
+      fullPath: '/services'
+      preLoaderRoute: typeof ServicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ArticlesRoute: ArticlesRoute,
+  DevisRoute: DevisRoute,
+  DossiersRoute: DossiersRoute,
+  IntegrationsRoute: IntegrationsRoute,
+  JournalRoute: JournalRoute,
+  JourneeRoute: JourneeRoute,
+  MarketingRoute: MarketingRoute,
+  MediathequeRoute: MediathequeRoute,
+  ParametresRoute: ParametresRoute,
+  PerformanceRoute: PerformanceRoute,
+  PlanningRoute: PlanningRoute,
+  QualificationRoute: QualificationRoute,
+  RealisationsRoute: RealisationsRoute,
+  ServicesRoute: ServicesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
