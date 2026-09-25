@@ -19,6 +19,11 @@
  */
 
 @theme inline {
+  --font-sans: "DM Sans", sans-serif;
+  --color-lime: var(--lime);
+  --color-lime-foreground: var(--lime-foreground);
+  --color-canvas: var(--canvas);
+  --color-soft: var(--soft);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -62,26 +67,30 @@
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 0.5rem;
   --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --foreground: oklch(0.22 0.015 280);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
+  --primary: oklch(0.32 0.073 289);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0.012 286);
+  --secondary-foreground: oklch(0.32 0.073 289);
+  --muted: oklch(0.966 0.003 280);
+  --muted-foreground: oklch(0.54 0.016 280);
+  --accent: oklch(0.94 0.018 286);
+  --accent-foreground: oklch(0.32 0.073 289);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
+  --border: oklch(0.915 0.006 285);
+  --input: oklch(0.915 0.006 285);
+  --ring: oklch(0.52 0.08 289);
+  --lime: oklch(0.91 0.18 122);
+  --lime-foreground: oklch(0.25 0.04 289);
+  --canvas: oklch(0.978 0.003 280);
+  --soft: oklch(0.955 0.008 283);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -98,6 +107,10 @@
 }
 
 .dark {
+  --lime: oklch(0.86 0.16 122);
+  --lime-foreground: oklch(0.22 0.03 289);
+  --canvas: oklch(0.17 0.025 284);
+  --soft: oklch(0.28 0.03 284);
   --background: oklch(0.129 0.042 264.695);
   --foreground: oklch(0.984 0.003 247.858);
   --card: oklch(0.208 0.042 265.755);
@@ -140,5 +153,6 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
   }
 }

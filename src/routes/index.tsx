@@ -1,24 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
-export const Route = createFileRoute("/")({
-  component: Index,
+import { createFileRoute } from '@tanstack/react-router';
+import { OekoWorkspace } from '@/components/oeko-workspace';
+export const Route = createFileRoute('/')({
+ head: () => ({ meta: [{title:'Tableau de bord — OEKO CRM'},{name:'description',content:'Aperçu du tableau de bord OEKO pour le suivi des leads, rendez-vous et ventes.'},{property:'og:title',content:'Tableau de bord — OEKO CRM'},{property:'og:description',content:'Suivez les leads, rendez-vous et ventes dans le backoffice OEKO.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary_large_image'}] }),
+ component: () => <OekoWorkspace view="dashboard" />,
 });
-
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
-}
