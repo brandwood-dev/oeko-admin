@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { navGroups, pathFor, services, articles, quotes, type Lead, type View } from '@/lib/oeko-data';
+import { leads as seedLeads, navGroups, pathFor, services, articles, quotes, type Lead, type View } from '@/lib/oeko-data';
 import { useOekoDemo } from '@/lib/oeko-demo';
 import { OekoSubpage } from '@/components/oeko-subpage';
 import chantierImage from '@/assets/chantier-facade.jpg';
