@@ -167,7 +167,7 @@ export function OekoSeo() {
             <KpiCard label="Impressions Google" value={fmtNumber(totals.impressions)} hint="Search Console" />
             <KpiCard label="CTR moyen" value={fmtPercent(totals.ctr, 2)} hint="Clics / impressions" />
             <KpiCard label="Position moyenne" value={totals.position.toFixed(1).replace('.', ',')} hint="Toutes requêtes" />
-            <KpiCard label="Coût par lead" value={fmtEuro(totals.ca / Math.max(totals.leads, 1) / 12)} hint="Moyenne pondérée" />
+            <KpiCard label="CA moyen par lead" value={fmtEuro(totals.ca / Math.max(totals.leads, 1))} hint="Valeur d’un lead" />
           </div>
 
           <Box
