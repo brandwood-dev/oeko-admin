@@ -9,6 +9,7 @@ import { leads as seedLeads, navGroups, pathFor, services, articles, quotes, typ
 import { useOekoDemo } from '@/lib/oeko-demo';
 import { OekoSubpage } from '@/components/oeko-subpage';
 import chantierImage from '@/assets/chantier-facade.jpg';
+import oekoLogo from '@/assets/oeko-logo.jpg.asset.json';
 
 const icons = { LayoutDashboard, Sun, Inbox, Users, CalendarDays, FileText, Newspaper, Layers3, House, Images, Megaphone, ChartNoAxesCombined, Settings2, PlugZap, ScrollText };
 const titles: Record<View,string> = {dashboard:'Tableau de bord',qualification:'Qualification',dossiers:'Dossiers CRM',journee:'Ma journée',planning:'Planning',devis:'Devis & ventes',articles:'Articles / Blog',services:'Services',realisations:'Réalisations',mediatheque:'Médiathèque',marketing:'Marketing',performance:'Performance commerciale',parametres:'Paramètres',integrations:'Intégrations & erreurs',journal:'Journal d’activité'};
