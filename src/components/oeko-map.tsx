@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import { MapPin, X } from 'lucide-react';
-import { MAP_VIEWBOX } from '@/lib/france-departments';
+import { IDF_VIEWBOX, MAP_ASPECT_RATIO, MAP_VIEWBOX } from '@/lib/france-departments';
 
 const IDF_CODES = ['75', '77', '78', '91', '92', '93', '94', '95'];
-const IDF_VIEWBOX = '168 108 63 71';
+
 import {
   departmentStats,
   formatEuro,
@@ -71,48 +71,58 @@ export function OekoDepartmentMap() {
         </div>
       </div>
 
-      <div className="grid gap-5 p-5 xl:grid-cols-[1.35fr_1fr]">
+      <div className="grid gap-5 p-5 lg:grid-cols-[1.4fr_1fr]">
         <div className="relative min-w-0" onMouseLeave={() => setHover(null)}>
-          <svg viewBox={MAP_VIEWBOX} className="w-full" role="img" aria-label="Carte de France des projets OEKO par département">
-            {stats.map((stat) => {
-              const ratio = metricValue(stat, metric) / max;
-              const isSelected = selected === stat.code;
-              return (
-                <path
-                  key={stat.code}
-                  d={stat.d}
-                  style={{ fill: fillFor(ratio) }}
-                  stroke={isSelected ? 'var(--lime-foreground)' : 'var(--background)'}
-                  strokeWidth={isSelected ? 2 : 0.6}
-                  className="cursor-pointer transition-[stroke] hover:stroke-lime-foreground"
-                  onMouseMove={(e) => {
-                    const box = e.currentTarget.ownerSVGElement?.parentElement?.getBoundingClientRect();
-                    setHover({ stat, x: e.clientX - (box?.left ?? 0), y: e.clientY - (box?.top ?? 0) });
-                  }}
-                  onClick={() => setSelected(stat.code === selected ? null : stat.code)}
-                />
-              );
-            })}
-          </svg>
-          <div className="absolute bottom-8 left-0 w-[34%] max-w-40 rounded-md border border-border bg-background/95 p-2 sm:bottom-10">
-            <p className="mb-1 text-[9px] font-bold uppercase text-muted-foreground">Île-de-France</p>
-            <svg viewBox={IDF_VIEWBOX} className="w-full" aria-hidden="true">
-              {stats.filter((s) => IDF_CODES.includes(s.code)).map((stat) => {
+          {/* Conteneur au ratio géographique exact de la France : la carte n'est jamais étirée. */}
+          <div className="relative mx-auto w-full" style={{ aspectRatio: MAP_ASPECT_RATIO }}>
+            <svg
+              viewBox={MAP_VIEWBOX}
+              preserveAspectRatio="xMidYMid meet"
+              className="block h-full w-full"
+              role="img"
+              aria-label="Carte de France des projets OEKO par département"
+            >
+              {stats.map((stat) => {
                 const ratio = metricValue(stat, metric) / max;
                 const isSelected = selected === stat.code;
                 return (
-                  <g key={stat.code} className="cursor-pointer" onClick={() => setSelected(stat.code === selected ? null : stat.code)}
+                  <path
+                    key={stat.code}
+                    d={stat.d}
+                    style={{ fill: fillFor(ratio) }}
+                    stroke={isSelected ? 'var(--lime-foreground)' : 'var(--background)'}
+                    strokeWidth={isSelected ? 2 : 0.6}
+                    className="cursor-pointer transition-[stroke] hover:stroke-lime-foreground"
                     onMouseMove={(e) => {
-                      const box = e.currentTarget.ownerSVGElement?.parentElement?.parentElement?.getBoundingClientRect();
+                      const box = e.currentTarget.ownerSVGElement?.parentElement?.getBoundingClientRect();
                       setHover({ stat, x: e.clientX - (box?.left ?? 0), y: e.clientY - (box?.top ?? 0) });
-                    }}>
-                    <path d={stat.d} style={{ fill: fillFor(ratio) }} stroke={isSelected ? 'var(--lime-foreground)' : 'var(--background)'} strokeWidth={isSelected ? 1.6 : 0.5} />
-                    {!['75', '92', '93', '94'].includes(stat.code) && <text x={stat.cx} y={stat.cy} textAnchor="middle" dominantBaseline="middle" fontSize="5" fontWeight="700" fill={ratio > 0.5 ? 'var(--primary-foreground)' : 'var(--foreground)'}>{stat.code}</text>}
-                  </g>
+                    }}
+                    onClick={() => setSelected(stat.code === selected ? null : stat.code)}
+                  />
                 );
               })}
             </svg>
+            <div className="absolute bottom-0 left-0 w-[30%] max-w-36 rounded-md border border-border bg-background/95 p-2">
+              <p className="mb-1 text-[9px] font-bold uppercase text-muted-foreground">Île-de-France</p>
+              <svg viewBox={IDF_VIEWBOX} preserveAspectRatio="xMidYMid meet" className="block w-full" aria-hidden="true">
+                {stats.filter((s) => IDF_CODES.includes(s.code)).map((stat) => {
+                  const ratio = metricValue(stat, metric) / max;
+                  const isSelected = selected === stat.code;
+                  return (
+                    <g key={stat.code} className="cursor-pointer" onClick={() => setSelected(stat.code === selected ? null : stat.code)}
+                      onMouseMove={(e) => {
+                        const box = e.currentTarget.ownerSVGElement?.parentElement?.parentElement?.getBoundingClientRect();
+                        setHover({ stat, x: e.clientX - (box?.left ?? 0), y: e.clientY - (box?.top ?? 0) });
+                      }}>
+                      <path d={stat.d} style={{ fill: fillFor(ratio) }} stroke={isSelected ? 'var(--lime-foreground)' : 'var(--background)'} strokeWidth={isSelected ? 1.6 : 0.5} />
+                      {!['75', '92', '93', '94'].includes(stat.code) && <text x={stat.cx} y={stat.cy} textAnchor="middle" dominantBaseline="middle" fontSize="6" fontWeight="700" fill={ratio > 0.5 ? 'var(--primary-foreground)' : 'var(--foreground)'}>{stat.code}</text>}
+                    </g>
+                  );
+                })}
+              </svg>
+            </div>
           </div>
+
           <div className="mt-2 flex items-center gap-2 text-[10px] text-muted-foreground">
             <span>Faible</span>
             <span className="h-2 flex-1 rounded-full" style={{ background: 'linear-gradient(90deg, hsl(220 14% 96%), var(--primary))' }} />
