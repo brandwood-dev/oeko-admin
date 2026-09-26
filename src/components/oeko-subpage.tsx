@@ -55,7 +55,7 @@ export function OekoSubpage({section,item}:{section:string;item:string}) {
   const back = base ? (base === 'dashboard' ? '/' : `/${base}`) : '/';
   const lead = leadList.find(l=>l.id === item);
   const isLead = section === 'dossiers' || section === 'qualification';
-  const title = isLead ? lead?.name ?? 'Dossier introuvable' : item === 'nouveau' ? `Nouveau ${labels[section]?.toLowerCase() ?? 'document'}` : item === 'vente' ? 'Enregistrer une vente' : item === 'perte' ? 'Enregistrer une perte' : `Modifier ${labels[section]?.toLowerCase() ?? 'document'}`;
+  const title = isLead ? lead?.name ?? 'Dossier introuvable' : item === 'nouveau' ? section==='articles'?'Nouvel article':section==='realisations'?'Nouvelle réalisation':`Nouveau ${labels[section]?.toLowerCase() ?? 'document'}` : item === 'vente' ? 'Enregistrer une vente' : item === 'perte' ? 'Enregistrer une perte' : `Modifier ${labels[section]?.toLowerCase() ?? 'document'}`;
   const saved = entries.find(e=>e.section===section && e.title===decodeURIComponent(item));
   const existing = item !== 'nouveau' && item !== 'vente' && item !== 'perte' ? decodeURIComponent(item) : '';
   const values: Record<string,string> = existing ? { Titre: existing, Nom: existing, Référence: existing, Prospect: existing } : {};
@@ -65,12 +65,12 @@ export function OekoSubpage({section,item}:{section:string;item:string}) {
     const data = new FormData(e.currentTarget);
     const recordSection = section === 'devis' && (item === 'vente' || item === 'perte') ? item : section;
     const recordTitle = String(data.get('Titre') || data.get('Nom') || data.get('Référence') || data.get('Prospect') || (recordSection==='vente'?'Vente enregistrée':recordSection==='perte'?'Perte enregistrée':'Sans titre'));
-    addEntry({section: recordSection,title:recordTitle,detail:String(data.get('Catégorie') || data.get('Service') || data.get('Ville') || ''),status:override || String(data.get('Statut') || 'Enregistré'),date:new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'short',year:'numeric'}).format(new Date())});
+    addEntry({section: recordSection,title:recordTitle,detail:section==='devis' ? `${String(data.get('Prospect') || '')} · ${String(data.get('Service') || '')} · ${String(data.get('Montant HT') || '')} €` : String(data.get('Catégorie') || data.get('Service') || data.get('Ville') || ''),status:override || String(data.get('Statut') || 'Enregistré'),date:new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'short',year:'numeric'}).format(new Date())});
     navigate({to:back});
   };
   const changeStatus = (status:string) => { if (!lead) return; setLeadList(prev=>prev.map(l=>l.id===lead.id?{...l,status}:l)); notify(`Dossier ${status.toLowerCase()}.`); };
   return <div className="mx-auto max-w-5xl px-4 pb-20 pt-7 sm:px-7 lg:px-9">
-    <nav aria-label="Fil d’Ariane" className="mb-5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><Link to="/" className="hover:text-primary">Espace OEKO</Link><span>/</span><a href={back} className="hover:text-primary">{base === 'dossiers' ? 'Dossiers CRM' : base === 'qualification' ? 'Qualification' : base === 'devis' ? 'Devis & ventes' : base === 'articles' ? 'Articles / Blog' : base === 'realisations' ? 'Réalisations' : base === 'planning' ? 'Planning' : 'Services'}</a><span>/</span><span className="font-semibold text-foreground">{title}</span></nav>
+    <nav aria-label="Fil d’Ariane" className="mb-5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><Link to="/" className="hover:text-primary">Espace OEKO</Link><span>/</span><button type="button" onClick={()=>navigate({to:back})} className="hover:text-primary">{base === 'dossiers' ? 'Dossiers CRM' : base === 'qualification' ? 'Qualification' : base === 'devis' ? 'Devis & ventes' : base === 'articles' ? 'Articles / Blog' : base === 'realisations' ? 'Réalisations' : base === 'planning' ? 'Planning' : 'Services'}</button><span>/</span><span className="font-semibold text-foreground">{title}</span></nav>
     <Button variant="ghost" size="sm" className="mb-5 -ml-2" onClick={()=>navigate({to:back})}><ArrowLeft size={16}/> Retour</Button>
     <div className="mb-8 flex flex-wrap items-start justify-between gap-4"><div><p className="text-[11px] font-bold uppercase text-primary">{isLead ? `Dossier ${lead?.id ?? ''}` : item==='nouveau' ? 'Création' : 'Gestion'}</p><h1 className="mt-2 text-2xl font-bold sm:text-3xl">{title}</h1><p className="mt-2 text-sm text-muted-foreground">{isLead ? `${lead?.city ?? ''} · ${lead?.service ?? ''}` : 'Espace de travail OEKO'}</p></div>{lead&&<span className="rounded bg-secondary px-3 py-1.5 text-xs font-semibold text-primary">{lead.status}</span>}</div>
     {isLead ? lead ? <div className="space-y-7">
