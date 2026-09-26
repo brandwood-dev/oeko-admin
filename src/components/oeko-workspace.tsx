@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { leads as seedLeads, navGroups, pathFor, services, articles, quotes, type Lead, type View } from '@/lib/oeko-data';
+import { navGroups, pathFor, services, articles, quotes, type Lead, type View } from '@/lib/oeko-data';
 import { useOekoDemo } from '@/lib/oeko-demo';
 import { OekoSubpage } from '@/components/oeko-subpage';
 import chantierImage from '@/assets/chantier-facade.jpg';
@@ -23,7 +23,7 @@ function DataTable({headers,rows,onRow}:{headers:string[];rows:{cells:ReactNode[
 function Label({children}:{children:ReactNode}){return <label className="mb-1.5 block text-xs font-semibold text-foreground">{children}</label>}
 function Field({label,placeholder='',type='text',defaultValue='',options,wide=false}:{label:string;placeholder?:string;type?:string;defaultValue?:string;options?:string[];wide?:boolean}){return <div className={wide?'sm:col-span-2':''}><Label>{label}</Label>{type==='textarea'?<Textarea placeholder={placeholder} defaultValue={defaultValue} className="min-h-24 bg-background"/>:options?<select defaultValue={defaultValue||options[0]} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">{options.map(v=><option key={v}>{v}</option>)}</select>:<Input type={type} placeholder={placeholder} defaultValue={defaultValue} className="bg-background"/>}</div>}
 export function OekoWorkspace({view,subpage}:{view:View;subpage?:{section:string;item:string}}){
- const {leadList,setLeadList,entries}=useOekoDemo();
+ const {leadList,entries}=useOekoDemo();
  const [mobileOpen,setMobileOpen]=useState(false),[logged,setLogged]=useState(true),[role,setRole]=useState('Administrateur');
  const [search,setSearch]=useState(''),[filter,setFilter]=useState('Tous les statuts'),[sourceFilter,setSourceFilter]=useState('Toutes les sources'),[serviceFilter,setServiceFilter]=useState('Tous les services');
  const [modal,setModal]=useState<string|null>(null),[toast,setToast]=useState(''),[period,setPeriod]=useState('7 jours'),[calendarMode,setCalendarMode]=useState('Semaine'),[offset,setOffset]=useState(0),[mediaNames,setMediaNames]=useState(['Rénovation façade - Créteil','Isolation extérieure - Versailles','Chantier toiture - Montreuil','Pompe à chaleur - Yvelines','Façade rénovée - Val-de-Marne','Maison rénovée - Essonne']),[mediaIndex,setMediaIndex]=useState<number|null>(null),[mediaDraft,setMediaDraft]=useState(''),[mediaAlt,setMediaAlt]=useState('');

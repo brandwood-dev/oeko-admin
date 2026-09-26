@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useOekoDemo } from '@/lib/oeko-demo';
-import { services, type View } from '@/lib/oeko-data';
+import { quotes, services, type View } from '@/lib/oeko-data';
 
 type FieldSpec = { name: string; type?: string; options?: string[]; wide?: boolean };
 type Group = { title: string; fields: FieldSpec[] };
@@ -56,9 +56,10 @@ export function OekoSubpage({section,item}:{section:string;item:string}) {
   const lead = leadList.find(l=>l.id === item);
   const isLead = section === 'dossiers' || section === 'qualification';
   const title = isLead ? lead?.name ?? 'Dossier introuvable' : item === 'nouveau' ? section==='articles'?'Nouvel article':section==='realisations'?'Nouvelle réalisation':`Nouveau ${labels[section]?.toLowerCase() ?? 'document'}` : item === 'vente' ? 'Enregistrer une vente' : item === 'perte' ? 'Enregistrer une perte' : `Modifier ${labels[section]?.toLowerCase() ?? 'document'}`;
-  const saved = entries.find(e=>e.section===section && e.title===decodeURIComponent(item));
-  const existing = item !== 'nouveau' && item !== 'vente' && item !== 'perte' ? decodeURIComponent(item) : '';
-  const values: Record<string,string> = existing ? { Titre: existing, Nom: existing, Référence: existing, Prospect: existing } : {};
+  const saved = entries.find(e=>e.section===section && e.title===item);
+  const existing = item !== 'nouveau' && item !== 'vente' && item !== 'perte' ? item : '';
+  const quote = section === 'devis' ? quotes.find(q=>q.ref===item) : undefined;
+  const values: Record<string,string> = existing ? { Titre: existing, Nom: existing, Référence: existing, Prospect: quote?.name ?? existing, Service: quote?.service ?? '', 'Montant HT': quote?.amount.replace(/[^0-9]/g,'') ?? '', 'Montant TTC': quote?.total.replace(/[^0-9]/g,'') ?? '', Statut: quote?.status ?? '' } : {};
   const notify = (message:string) => { setFeedback(message); window.setTimeout(()=>setFeedback(''),3500); };
   const save = (e:FormEvent<HTMLFormElement>, override?:string) => {
     e.preventDefault();
