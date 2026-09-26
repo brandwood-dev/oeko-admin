@@ -6,15 +6,17 @@ type DemoContextValue = {
   leadList: Lead[]; setLeadList: React.Dispatch<React.SetStateAction<Lead[]>>;
   notes: Record<string, string[]>; addNote: (id: string, note: string) => void;
   entries: DemoEntry[]; addEntry: (entry: DemoEntry) => void;
+  desktopMenuOpen: boolean; setDesktopMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 const DemoContext = createContext<DemoContextValue | null>(null);
 export function OekoDemoProvider({ children }: { children: ReactNode }) {
   const [leadList, setLeadList] = useState(leads);
   const [notes, setNotes] = useState<Record<string, string[]>>({});
   const [entries, setEntries] = useState<DemoEntry[]>([]);
+  const [desktopMenuOpen, setDesktopMenuOpen] = useState(true);
   const addNote = (id: string, note: string) => setNotes(prev => ({ ...prev, [id]: [...(prev[id] ?? []), note] }));
   const addEntry = (entry: DemoEntry) => setEntries(prev => [entry, ...prev]);
-  return <DemoContext.Provider value={{ leadList, setLeadList, notes, addNote, entries, addEntry }}>{children}</DemoContext.Provider>;
+  return <DemoContext.Provider value={{ leadList, setLeadList, notes, addNote, entries, addEntry, desktopMenuOpen, setDesktopMenuOpen }}>{children}</DemoContext.Provider>;
 }
 export function useOekoDemo() {
   const context = useContext(DemoContext);
