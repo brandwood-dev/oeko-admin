@@ -23,6 +23,7 @@ import { Route as PerformanceRouteImport } from './routes/performance'
 import { Route as PlanningRouteImport } from './routes/planning'
 import { Route as QualificationRouteImport } from './routes/qualification'
 import { Route as RealisationsRouteImport } from './routes/realisations'
+import { Route as SeoRouteImport } from './routes/seo'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as SectionItemRouteImport } from './routes/$section.$item'
 
@@ -96,6 +97,11 @@ const RealisationsRoute = RealisationsRouteImport.update({
   path: '/realisations',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SeoRoute = SeoRouteImport.update({
+  id: '/seo',
+  path: '/seo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServicesRoute = ServicesRouteImport.update({
   id: '/services',
   path: '/services',
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/planning': typeof PlanningRoute
   '/qualification': typeof QualificationRoute
   '/realisations': typeof RealisationsRoute
+  '/seo': typeof SeoRoute
   '/services': typeof ServicesRoute
   '/$section/$item': typeof SectionItemRoute
 }
@@ -140,6 +147,7 @@ export interface FileRoutesByTo {
   '/planning': typeof PlanningRoute
   '/qualification': typeof QualificationRoute
   '/realisations': typeof RealisationsRoute
+  '/seo': typeof SeoRoute
   '/services': typeof ServicesRoute
   '/$section/$item': typeof SectionItemRoute
 }
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/planning': typeof PlanningRoute
   '/qualification': typeof QualificationRoute
   '/realisations': typeof RealisationsRoute
+  '/seo': typeof SeoRoute
   '/services': typeof ServicesRoute
   '/$section/$item': typeof SectionItemRoute
 }
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/planning'
     | '/qualification'
     | '/realisations'
+    | '/seo'
     | '/services'
     | '/$section/$item'
   fileRoutesByTo: FileRoutesByTo
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/planning'
     | '/qualification'
     | '/realisations'
+    | '/seo'
     | '/services'
     | '/$section/$item'
   id:
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/planning'
     | '/qualification'
     | '/realisations'
+    | '/seo'
     | '/services'
     | '/$section/$item'
   fileRoutesById: FileRoutesById
@@ -234,6 +246,7 @@ export interface RootRouteChildren {
   PlanningRoute: typeof PlanningRoute
   QualificationRoute: typeof QualificationRoute
   RealisationsRoute: typeof RealisationsRoute
+  SeoRoute: typeof SeoRoute
   ServicesRoute: typeof ServicesRoute
   SectionItemRoute: typeof SectionItemRoute
 }
@@ -338,6 +351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RealisationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/seo': {
+      id: '/seo'
+      path: '/seo'
+      fullPath: '/seo'
+      preLoaderRoute: typeof SeoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/services': {
       id: '/services'
       path: '/services'
@@ -370,6 +390,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlanningRoute: PlanningRoute,
   QualificationRoute: QualificationRoute,
   RealisationsRoute: RealisationsRoute,
+  SeoRoute: SeoRoute,
   ServicesRoute: ServicesRoute,
   SectionItemRoute: SectionItemRoute,
 }

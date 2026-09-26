@@ -1,4 +1,4 @@
-export type View = 'dashboard' | 'qualification' | 'dossiers' | 'journee' | 'planning' | 'devis' | 'articles' | 'services' | 'realisations' | 'mediatheque' | 'marketing' | 'performance' | 'parametres' | 'integrations' | 'journal';
+export type View = 'dashboard' | 'qualification' | 'dossiers' | 'journee' | 'planning' | 'devis' | 'articles' | 'services' | 'realisations' | 'mediatheque' | 'marketing' | 'seo' | 'performance' | 'parametres' | 'integrations' | 'journal';
 export type Lead = { id: string; name: string; initials: string; city: string; zip: string; phone: string; email: string; service: string; source: string; status: string; date: string; owner: string; amount: string; next: string; address: string; description: string };
 export const leads: Lead[] = [
   {id:'OE-24091',name:'Foued Benali',initials:'FB',city:'Créteil',zip:'94000',phone:'06 12 84 35 71',email:'foued.benali@exemple.fr',service:'Isolation extérieure',source:'Google Ads',status:'À qualifier',date:'Aujourd’hui, 09:42',owner:'Laurent Moreau',amount:'18 500 €',next:'Appel · Aujourd’hui 14:30',address:'18 rue du Général Leclerc',description:'Souhaite isoler la façade de sa maison des années 80 avant l’hiver.'},
@@ -12,7 +12,7 @@ export const navGroups: { label: string; items: {view:View; label:string; icon:s
  {label:'VUE D’ENSEMBLE',items:[{view:'dashboard',label:'Tableau de bord',icon:'LayoutDashboard'},{view:'journee',label:'Ma journée',icon:'Sun'}]},
  {label:'RELATION CLIENT',items:[{view:'qualification',label:'Qualification',icon:'Inbox'},{view:'dossiers',label:'Dossiers CRM',icon:'Users'},{view:'planning',label:'Planning',icon:'CalendarDays'},{view:'devis',label:'Devis & ventes',icon:'FileText'}]},
  {label:'CONTENUS',items:[{view:'articles',label:'Articles / Blog',icon:'Newspaper'},{view:'services',label:'Services',icon:'Layers3'},{view:'realisations',label:'Réalisations',icon:'House'},{view:'mediatheque',label:'Médiathèque',icon:'Images'}]},
- {label:'PILOTAGE',items:[{view:'marketing',label:'Marketing',icon:'Megaphone'},{view:'performance',label:'Performance',icon:'ChartNoAxesCombined'}]},
+ {label:'PILOTAGE',items:[{view:'marketing',label:'Marketing',icon:'Megaphone'},{view:'seo',label:'SEO & Acquisition',icon:'TrendingUp'},{view:'performance',label:'Performance',icon:'ChartNoAxesCombined'}]},
  {label:'ADMINISTRATION',items:[{view:'parametres',label:'Paramètres',icon:'Settings2'},{view:'integrations',label:'Intégrations',icon:'PlugZap'},{view:'journal',label:'Journal d’activité',icon:'ScrollText'}]},
 ];
 export const pathFor = (view: View) => view === 'dashboard' ? '/' : `/${view}`;

@@ -12,3 +12,11 @@
 - [x] Filtres période / donnée affichée / service
 - [x] Tooltip au survol et panneau détail au clic (KPI + répartition par service)
 - [x] Tableau Top 5 départements cliquable
+
+## Module SEO & Acquisition
+- [x] Rubrique « SEO & Acquisition » dans le menu Pilotage et route /seo
+- [x] Onglet Vue d'ensemble : 12 cartes KPI (GA4 + Search Console) et graphique interactif
+- [x] Onglet Pages : tableau avec filtres période / service / canal
+- [x] Onglet Mots-clés SEO : requêtes Google avec badges de tendance
+- [x] Onglet Opportunités SEO : faible CTR, positions 4-15, pages en baisse et en hausse
+- [x] Bloc Acquisition : trafic croisé avec leads, devis, ventes et CA par canal
