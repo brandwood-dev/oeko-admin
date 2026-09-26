@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useOekoDemo } from '@/lib/oeko-demo';
 import { quotes, services, type View } from '@/lib/oeko-data';
 
-type FieldSpec = { name: string; type?: string; options?: string[]; wide?: boolean };
+type FieldSpec = { name: string; type?: string; options?: string[] | undefined; wide?: boolean };
 type Group = { title: string; fields: FieldSpec[] };
 const f = (name: string, type = 'text', wide = false, options?: string[]): FieldSpec => ({ name, type, wide, options });
 const groups: Record<string, Group[]> = {
