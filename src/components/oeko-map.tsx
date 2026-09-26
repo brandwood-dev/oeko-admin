@@ -107,7 +107,7 @@ export function OekoDepartmentMap() {
                       setHover({ stat, x: e.clientX - (box?.left ?? 0), y: e.clientY - (box?.top ?? 0) });
                     }}>
                     <path d={stat.d} style={{ fill: fillFor(ratio) }} stroke={isSelected ? 'var(--lime-foreground)' : 'var(--background)'} strokeWidth={isSelected ? 1.6 : 0.5} />
-                    <text x={stat.cx} y={stat.cy} textAnchor="middle" dominantBaseline="middle" fontSize="5" fontWeight="700" fill={ratio > 0.5 ? 'var(--primary-foreground)' : 'var(--foreground)'}>{stat.code}</text>
+                    {!['75', '92', '93', '94'].includes(stat.code) && <text x={stat.cx} y={stat.cy} textAnchor="middle" dominantBaseline="middle" fontSize="5" fontWeight="700" fill={ratio > 0.5 ? 'var(--primary-foreground)' : 'var(--foreground)'}>{stat.code}</text>}
                   </g>
                 );
               })}
