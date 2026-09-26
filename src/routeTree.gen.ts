@@ -24,6 +24,7 @@ import { Route as PlanningRouteImport } from './routes/planning'
 import { Route as QualificationRouteImport } from './routes/qualification'
 import { Route as RealisationsRouteImport } from './routes/realisations'
 import { Route as ServicesRouteImport } from './routes/services'
+import { Route as SectionItemRouteImport } from './routes/$section.$item'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -100,6 +101,11 @@ const ServicesRoute = ServicesRouteImport.update({
   path: '/services',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SectionItemRoute = SectionItemRouteImport.update({
+  id: '/$section/$item',
+  path: '/$section/$item',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/qualification': typeof QualificationRoute
   '/realisations': typeof RealisationsRoute
   '/services': typeof ServicesRoute
+  '/$section/$item': typeof SectionItemRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/qualification': typeof QualificationRoute
   '/realisations': typeof RealisationsRoute
   '/services': typeof ServicesRoute
+  '/$section/$item': typeof SectionItemRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   '/qualification': typeof QualificationRoute
   '/realisations': typeof RealisationsRoute
   '/services': typeof ServicesRoute
+  '/$section/$item': typeof SectionItemRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -171,6 +180,7 @@ export interface FileRouteTypes {
     | '/qualification'
     | '/realisations'
     | '/services'
+    | '/$section/$item'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/qualification'
     | '/realisations'
     | '/services'
+    | '/$section/$item'
   id:
     | '__root__'
     | '/'
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/qualification'
     | '/realisations'
     | '/services'
+    | '/$section/$item'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -223,6 +235,7 @@ export interface RootRouteChildren {
   QualificationRoute: typeof QualificationRoute
   RealisationsRoute: typeof RealisationsRoute
   ServicesRoute: typeof ServicesRoute
+  SectionItemRoute: typeof SectionItemRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -332,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$section/$item': {
+      id: '/$section/$item'
+      path: '/$section/$item'
+      fullPath: '/$section/$item'
+      preLoaderRoute: typeof SectionItemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -351,6 +371,7 @@ const rootRouteChildren: RootRouteChildren = {
   QualificationRoute: QualificationRoute,
   RealisationsRoute: RealisationsRoute,
   ServicesRoute: ServicesRoute,
+  SectionItemRoute: SectionItemRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
