@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import { MapPin, X } from 'lucide-react';
-import { MAP_VIEWBOX } from '@/lib/france-departments';
+import { IDF_VIEWBOX, MAP_ASPECT_RATIO, MAP_VIEWBOX } from '@/lib/france-departments';
 
 const IDF_CODES = ['75', '77', '78', '91', '92', '93', '94', '95'];
-const IDF_VIEWBOX = '168 108 63 71';
+
 import {
   departmentStats,
   formatEuro,
