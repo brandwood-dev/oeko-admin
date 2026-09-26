@@ -79,7 +79,7 @@ export function OekoDepartmentMap() {
                   key={stat.code}
                   d={stat.d}
                   style={{ fill: fillFor(ratio) }}
-                  stroke={isSelected ? 'var(--lime-foreground)' : 'white'}
+                  stroke={isSelected ? 'var(--lime-foreground)' : 'var(--background)'}
                   strokeWidth={isSelected ? 2 : 0.6}
                   className="cursor-pointer transition-[stroke] hover:stroke-lime-foreground"
                   onMouseMove={(e) => {
