@@ -6,3 +6,9 @@
 - [x] Convertir les créations et la fiche prospect en sous-pages intégrées avec fil d’Ariane et retour.
 - [x] Vérifier la navigation, les formulaires et les changements de dossier sur ordinateur et mobile.
 - [x] Permettre de masquer/réafficher le menu sur ordinateur pour agrandir les pages, sans changer le menu mobile.
+
+## Carte des départements (tableau de bord)
+- [x] Carte choroplèthe de France par département + encart zoomé Île-de-France
+- [x] Filtres période / donnée affichée / service
+- [x] Tooltip au survol et panneau détail au clic (KPI + répartition par service)
+- [x] Tableau Top 5 départements cliquable
