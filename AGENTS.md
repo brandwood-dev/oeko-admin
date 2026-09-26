@@ -12,3 +12,4 @@
 - OEKO is a frontend-only client preview: route pages share a single interactive demo workspace and local in-memory data, because the request excludes backend implementation.
 
 - Keep OEKO demo records in the root-level React provider so route-based forms and CRM details retain changes during navigation without a backend.
+- Keep the desktop navigation visibility in the root demo provider so the chosen layout survives page navigation without browser storage.
