@@ -22,6 +22,6 @@
 - [x] Bloc Acquisition : trafic croisé avec leads, devis, ventes et CA par canal
 
 ## Refonte du tableau de bord commercial
-- [ ] En-tête de pilotage, indicateurs hiérarchisés, graphique comparatif et parcours commercial interactif
-- [ ] CA par métier, performance équipe, actions et opportunités enrichies
-- [ ] Préserver la carte des départements et vérifier les parcours desktop/mobile
+- [x] En-tête de pilotage, indicateurs hiérarchisés, graphique comparatif et parcours commercial interactif
+- [x] CA par métier, performance équipe, actions et opportunités enrichies
+- [x] Préserver la carte des départements et vérifier les parcours desktop/mobile
