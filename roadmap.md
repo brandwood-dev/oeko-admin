@@ -20,3 +20,8 @@
 - [x] Onglet Mots-clés SEO : requêtes Google avec badges de tendance
 - [x] Onglet Opportunités SEO : faible CTR, positions 4-15, pages en baisse et en hausse
 - [x] Bloc Acquisition : trafic croisé avec leads, devis, ventes et CA par canal
+
+## Refonte du tableau de bord commercial
+- [x] En-tête de pilotage, indicateurs hiérarchisés, graphique comparatif et parcours commercial interactif
+- [x] CA par métier, performance équipe, actions et opportunités enrichies
+- [x] Préserver la carte des départements et vérifier les parcours desktop/mobile

@@ -1,0 +1,96 @@
+import { useMemo, useState } from 'react';
+import { ArrowRight, ArrowUpRight, CalendarDays, Check, ChevronRight, FileText, Flame, Phone, Plus, TrendingUp, Users } from 'lucide-react';
+import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Button } from '@/components/ui/button';
+import { OekoDepartmentMap } from '@/components/oeko-map';
+import type { Lead, View } from '@/lib/oeko-data';
+
+type Period = '7 jours' | 'Ce mois' | 'Trimestre';
+type Scope = 'Entreprise' | 'Ma performance';
+type Stage = 'Tous' | 'Nouveaux leads' | 'Qualifiés' | 'Visites techniques' | 'Devis présentés' | 'Chantiers signés';
+const periods: Period[] = ['7 jours', 'Ce mois', 'Trimestre'];
+const stages: { label: Stage; count: number; percent: number; detail: string }[] = [
+  { label: 'Nouveaux leads', count: 142, percent: 100, detail: 'Entrées au pipeline' },
+  { label: 'Qualifiés', count: 98, percent: 69, detail: 'Éligibles aux aides' },
+  { label: 'Visites techniques', count: 56, percent: 39, detail: 'Rendez-vous terrain' },
+  { label: 'Devis présentés', count: 38, percent: 27, detail: '485 000 € engagés' },
+  { label: 'Chantiers signés', count: 24, percent: 17, detail: '328 400 € signés' },
+];
+const series: Record<Period, { name: string; realise: number; objectif: number }[]> = {
+  '7 jours': [{name:'Lun',realise:27,objectif:33},{name:'Mar',realise:42,objectif:36},{name:'Mer',realise:35,objectif:42},{name:'Jeu',realise:58,objectif:48},{name:'Ven',realise:63,objectif:53},{name:'Sam',realise:47,objectif:56},{name:'Dim',realise:72,objectif:62}],
+  'Ce mois': [{name:'S1',realise:42,objectif:48},{name:'S2',realise:78,objectif:82},{name:'S3',realise:119,objectif:116},{name:'S4',realise:164,objectif:150}],
+  Trimestre: [{name:'Juil',realise:92,objectif:100},{name:'Août',realise:138,objectif:165},{name:'Sept',realise:224,objectif:215}],
+};
+const trades = [
+  { name: 'Pompe à chaleur', short: 'PAC', share: 38, color: 'bg-primary' },
+  { name: 'Isolation extérieure', short: 'ITE', share: 31, color: 'bg-chart-2' },
+  { name: 'Toiture', short: 'Toiture', share: 17, color: 'bg-lime' },
+  { name: 'Façade & menuiseries', short: 'Autres', share: 14, color: 'bg-chart-4' },
+];
+const actions = [
+  { time:'09:30', type:'Qualification urgente', person:'Foued Benali', city:'Créteil (94)', trade:'Isolation extérieure', amount:'18 500 €', id:'OE-24091', urgent:true },
+  { time:'11:00', type:'Devis à relancer', person:'Nadia Bensalem', city:'Saint-Denis (93)', trade:'Menuiseries', amount:'9 600 €', id:'OE-24088', urgent:true },
+  { time:'14:00', type:'Visite technique', person:'Camille Petit', city:'Montreuil (93)', trade:'Toiture', amount:'22 800 €', id:'OE-24089', urgent:false },
+  { time:'16:00', type:'Rappel prospect', person:'Laurent Dubois', city:'Versailles (78)', trade:'Pompe à chaleur', amount:'14 200 €', id:'OE-24090', urgent:false },
+];
+const euro = (value: number) => `${Math.round(value).toLocaleString('fr-FR')} €`;
+function Panel({title, action, children}:{title:string;action?:React.ReactNode;children:React.ReactNode}) {
+  return <section className="min-w-0 rounded-lg border border-border bg-card"><div className="flex min-h-14 items-center justify-between gap-2 border-b border-border px-4 py-3 sm:px-5"><h2 className="text-sm font-bold">{title}</h2>{action}</div>{children}</section>;
+}
+function LinkAction({label,onClick}:{label:string;onClick:()=>void}) {
+  return <Button variant="ghost" size="sm" onClick={onClick} className="shrink-0 text-primary">{label}<ArrowRight size={14}/></Button>;
+}
+export function OekoDashboard({leadList, openLead, go, newDossier}:{leadList:Lead[];openLead:(lead:Lead)=>void;go:(view:View)=>void;newDossier:()=>void}) {
+  const [period,setPeriod] = useState<Period>('Ce mois');
+  const [scope,setScope] = useState<Scope>('Entreprise');
+  const [stage,setStage] = useState<Stage>('Tous');
+  const [done,setDone] = useState<string[]>([]);
+  const periodScale = period === '7 jours' ? .28 : period === 'Trimestre' ? 2.75 : 1;
+  const scopeScale = scope === 'Entreprise' ? 1 : .38;
+  const signed = Math.round(328400 * periodScale * scopeScale / 100) * 100;
+  const pipeline = Math.round(485000 * periodScale * scopeScale / 100) * 100;
+  const target = Math.round(400000 * periodScale * scopeScale / 100) * 100;
+  const achievement = Math.round(signed / target * 100);
+  const visibleLeads = useMemo(() => leadList.filter(l => {
+    if (scope === 'Ma performance' && l.owner !== 'Laurent Moreau') return false;
+    if (stage === 'Tous') return true;
+    if (stage === 'Nouveaux leads') return ['Nouveau','À qualifier','À rappeler'].includes(l.status);
+    if (stage === 'Qualifiés') return ['Qualifié','RDV planifié','Devis envoyé','Signé'].includes(l.status);
+    if (stage === 'Visites techniques') return l.status === 'RDV planifié';
+    if (stage === 'Devis présentés') return l.status === 'Devis envoyé';
+    return l.status === 'Signé';
+  }),[leadList,scope,stage]);
+  const highlights = visibleLeads.filter(l => ['Devis envoyé','RDV planifié','Qualifié'].includes(l.status));
+  const flow = [{label:'Visites cette semaine',value:'18',sub:'3 aujourd’hui',icon:CalendarDays,view:'planning' as View}, {label:'Devis à relancer',value:'6',sub:'2 sous 48 h',icon:FileText,view:'devis' as View}, {label:'Aides en instruction',value:'12',sub:'MaPrimeRénov’ / CEE',icon:TrendingUp,view:'dossiers' as View}, {label:'Leads non traités',value:'4',sub:'À qualifier',icon:Users,view:'qualification' as View}];
+  return <div className="space-y-5 sm:space-y-6">
+    <section className="border-b border-border pb-6">
+      <div className="flex flex-wrap items-start justify-between gap-5">
+        <div><p className="text-[11px] font-bold uppercase text-primary">Pilotage commercial · Septembre 2026</p><h2 className="mt-2 text-xl font-bold sm:text-2xl">Bonjour Alexandre</h2><p className="mt-1 text-sm text-muted-foreground">Du premier contact au chantier signé.</p></div>
+        <Button onClick={newDossier} size="sm" className="h-9"><Plus size={16}/> Nouveau dossier</Button>
+      </div>
+      <div className="mt-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="w-full max-w-md"><div className="flex items-end justify-between gap-2 text-xs"><span className="font-semibold">Objectif de CA signé</span><span className="font-bold">{euro(signed)} <span className="font-normal text-muted-foreground">/ {euro(target)}</span></span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-label="Objectif de CA signé" aria-valuenow={achievement} aria-valuemin={0} aria-valuemax={100}><div className="h-full rounded-full bg-primary" style={{width:`${achievement}%`}}/></div><p className="mt-1.5 text-[11px] text-muted-foreground">{achievement} % atteint · {euro(target - signed)} restants</p></div>
+        <div className="flex flex-wrap gap-2"><div role="group" aria-label="Période du tableau de bord" className="inline-flex gap-1 rounded-md border border-border bg-canvas p-1">{periods.map(p=><Button key={p} variant="ghost" size="sm" aria-pressed={period===p} onClick={()=>setPeriod(p)} className={`h-8 px-3 ${period===p?'bg-background font-bold shadow-sm hover:bg-background':'text-muted-foreground'}`}>{p}</Button>)}</div><div role="group" aria-label="Vue commerciale" className="inline-flex gap-1 rounded-md border border-border bg-canvas p-1">{(['Entreprise','Ma performance'] as Scope[]).map(s=><Button key={s} variant="ghost" size="sm" aria-pressed={scope===s} onClick={()=>setScope(s)} className={`h-8 px-3 ${scope===s?'bg-background font-bold shadow-sm hover:bg-background':'text-muted-foreground'}`}>{s}</Button>)}</div></div>
+      </div>
+    </section>
+    <div className="grid gap-3 md:grid-cols-3">
+      <div className="rounded-lg border border-primary bg-primary p-5 text-primary-foreground"><div className="flex items-center justify-between text-xs font-semibold text-primary-foreground/75">CA signé · {period.toLowerCase()} <ArrowUpRight size={16}/></div><p className="mt-4 text-2xl font-bold sm:text-3xl">{euro(signed)}</p><div className="mt-4 flex flex-wrap items-center gap-2 text-[11px]"><span className="rounded bg-lime px-2 py-1 font-bold text-lime-foreground">+14,6 % vs période précédente</span><span className="text-primary-foreground/75">18 200 € / vente</span></div></div>
+      <div className="rounded-lg border border-border bg-card p-5"><p className="text-xs font-semibold text-muted-foreground">Pipeline actif <span className="float-right text-primary"><TrendingUp size={16}/></span></p><p className="mt-4 text-2xl font-bold sm:text-3xl">{euro(pipeline)}</p><p className="mt-4 text-[11px] text-muted-foreground">{Math.round(26 * periodScale * scopeScale)} devis en négociation <span className="text-primary">· 34 % attendus</span></p></div>
+      <div className="rounded-lg border border-border bg-card p-5"><p className="text-xs font-semibold text-muted-foreground">Conversion devis → vente <span className="float-right text-primary"><ArrowUpRight size={16}/></span></p><p className="mt-4 text-2xl font-bold sm:text-3xl">34 %</p><p className="mt-4 text-[11px] text-muted-foreground"><span className="font-bold text-primary">+3,2 pts</span> vs mois précédent</p></div>
+    </div>
+    <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">{flow.map(item=><Button key={item.label} variant="outline" onClick={()=>go(item.view)} className="h-auto min-w-0 flex-col items-start gap-2 whitespace-normal p-4 text-left shadow-none hover:bg-canvas"><span className="flex w-full items-center justify-between gap-1 text-[11px] font-medium text-muted-foreground">{item.label}<item.icon size={16} className="shrink-0 text-primary"/></span><span className="text-xl font-bold text-foreground">{item.value}</span><span className="text-[11px] text-muted-foreground">{item.sub}</span></Button>)}</div>
+    <div className="grid gap-5 xl:grid-cols-[1.15fr_1fr]">
+      <Panel title="Activité commerciale" action={<span className="text-[11px] text-muted-foreground">{period}</span>}><div className="p-4 sm:p-5"><div className="mb-4 flex flex-wrap items-center gap-4 text-[11px] text-muted-foreground"><span className="flex items-center gap-1.5"><i className="size-2 rounded-full bg-primary"/>Réalisé</span><span className="flex items-center gap-1.5"><i className="size-2 rounded-full bg-chart-2"/>Objectif</span><span className="ml-auto font-semibold text-primary">+14,6 % vs période précédente</span></div><div className="h-60 w-full" aria-label="Évolution de l’activité réalisée et de l’objectif"><ResponsiveContainer width="100%" height="100%"><ComposedChart data={series[period]} margin={{top:8,right:10,bottom:0,left:-22}}><CartesianGrid stroke="var(--border)" vertical={false} strokeDasharray="3 4"/><XAxis dataKey="name" tickLine={false} axisLine={false} tick={{fill:'var(--muted-foreground)',fontSize:11}}/><YAxis tickLine={false} axisLine={false} tick={{fill:'var(--muted-foreground)',fontSize:11}}/><Tooltip formatter={(value,name)=>[`${value} k€`,name === 'realise' ? 'Réalisé' : 'Objectif']} contentStyle={{background:'var(--background)',border:'1px solid var(--border)',borderRadius:6,fontSize:12}}/><Area type="monotone" dataKey="realise" stroke="var(--primary)" strokeWidth={2.5} fill="var(--secondary)" activeDot={{r:5}}/><Line type="monotone" dataKey="objectif" stroke="var(--chart-2)" strokeWidth={2} strokeDasharray="5 4" dot={false}/></ComposedChart></ResponsiveContainer></div><p className="mt-2 text-[11px] text-muted-foreground">CA signé cumulé, en milliers d’euros · données de démonstration</p></div></Panel>
+      <Panel title="Parcours commercial" action={<span className="text-[11px] text-muted-foreground">{period}</span>}><div className="space-y-1 p-4 sm:p-5">{stages.map((step,i)=><Button key={step.label} variant="ghost" aria-pressed={stage===step.label} onClick={()=>setStage(stage===step.label?'Tous':step.label)} className={`h-auto w-full justify-start gap-3 whitespace-normal rounded-md border px-3 py-2.5 text-left ${stage===step.label?'border-primary bg-secondary':'border-transparent hover:bg-canvas'}`}><span className={`flex size-6 shrink-0 items-center justify-center rounded text-[10px] font-bold ${i===4?'bg-lime text-lime-foreground':'bg-secondary text-primary'}`}>{i+1}</span><span className="min-w-0 flex-1"><span className="flex items-center justify-between gap-2 text-xs"><strong className="truncate">{step.label}</strong><strong>{Math.round(step.count * periodScale * scopeScale)}</strong></span><span className="mt-1.5 block h-1.5 overflow-hidden rounded-full bg-muted"><span className={`block h-full rounded-full ${i===4?'bg-lime':'bg-primary'}`} style={{width:`${step.percent}%`}}/></span><span className="mt-1 block text-[10px] font-normal text-muted-foreground">{i===3?`${euro(pipeline)} engagés`:i===4?`${euro(signed)} signés`:step.detail} · {step.percent} %</span></span><ChevronRight size={14} className="shrink-0 text-muted-foreground"/></Button>)}<p className="px-3 pt-2 text-[11px] text-muted-foreground">Sélectionnez une étape pour voir les dossiers correspondants.</p></div></Panel>
+    </div>
+    <div className="grid gap-5 xl:grid-cols-2">
+      <Panel title="CA signé par métier" action={<span className="text-[11px] text-muted-foreground">{period}</span>}><div className="grid items-center gap-6 p-5 sm:grid-cols-[170px_1fr]"><div className="relative mx-auto size-40 rounded-full" style={{background:'conic-gradient(var(--primary) 0% 38%, var(--chart-2) 38% 69%, var(--lime) 69% 86%, var(--chart-4) 86% 100%)'}} role="img" aria-label="CA par métier : PAC 38 %, ITE 31 %, toiture 17 %, autres 14 %"><div className="absolute inset-7 flex flex-col items-center justify-center rounded-full bg-card"><strong className="text-lg">{Math.round(signed/1000)} k€</strong><span className="text-[10px] text-muted-foreground">CA signé</span></div></div><div className="space-y-3">{trades.map(t=><div key={t.name} className="flex items-center gap-2 text-xs"><span className={`size-2.5 shrink-0 rounded-sm ${t.color}`}/><span className="min-w-0 flex-1 text-muted-foreground">{t.name}</span><strong>{t.share} %</strong></div>)}</div></div></Panel>
+      <Panel title="Performance de l’équipe" action={<LinkAction label="Voir la performance" onClick={()=>go('performance')}/>}><div className="divide-y divide-border">{[['LM','Laurent Moreau','9 ventes','124 600 €',82],['SM','Sophie Martin','8 ventes','109 400 €',70],['TL','Thomas Leroy','7 ventes','94 400 €',62]].map(([initials,name,count,value,progress])=><div key={name} className="flex items-center gap-3 px-5 py-3.5"><span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary text-[11px] font-bold text-primary">{initials}</span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center justify-between gap-1 text-xs"><strong>{name}</strong><strong>{value} </strong></div><p className="mt-1 text-[11px] text-muted-foreground">{count}</p><div className="mt-2 h-1 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{width:`${progress}%`}}/></div></div></div>)}</div></Panel>
+    </div>
+    <OekoDepartmentMap/>
+    <div className="grid gap-5 xl:grid-cols-2">
+      <Panel title="Actions & rendez-vous prioritaires" action={<LinkAction label="Ma journée" onClick={()=>go('journee')}/>}><div className="divide-y divide-border">{actions.map(a=>{const lead=leadList.find(l=>l.id===a.id);const completed=done.includes(a.id);return <div key={a.id} className={`flex gap-3 px-4 py-4 sm:px-5 ${completed?'opacity-55':''}`}><span className="w-11 shrink-0 pt-0.5 text-xs font-bold text-primary">{a.time}</span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${a.urgent?'bg-destructive/10 text-destructive':'bg-secondary text-primary'}`}>{a.type}</span>{completed&&<span className="text-[10px] font-bold text-muted-foreground">Fait</span>}</div><Button variant="link" size="sm" onClick={()=>lead&&openLead(lead)} className="mt-1 h-auto justify-start p-0 text-xs font-bold text-foreground">{a.person} <ArrowRight size={12}/></Button><p className="text-[11px] text-muted-foreground">{a.trade} · {a.city} · {a.amount}</p></div><div className="flex shrink-0 items-start gap-1"><Button size="icon" variant="ghost" aria-label={`Appeler ${a.person}`} title="Appeler" onClick={()=>{if(lead)window.location.href=`tel:${lead.phone.replace(/\s/g,'')}`}}><Phone size={15}/></Button><Button size="icon" variant="ghost" aria-label={completed?`Reprendre ${a.person}`:`Marquer ${a.person} comme fait`} title={completed?'Reprendre':'Marquer comme fait'} onClick={()=>setDone(prev=>completed?prev.filter(x=>x!==a.id):[...prev,a.id])}><Check size={16} className={completed?'text-primary':'text-muted-foreground'}/></Button></div></div>})}</div></Panel>
+      <Panel title={stage==='Tous'?'Opportunités & derniers leads':`Dossiers · ${stage}`} action={stage!=='Tous'?<Button variant="ghost" size="sm" onClick={()=>setStage('Tous')}>Effacer le filtre</Button>:<LinkAction label="Tous les dossiers" onClick={()=>go('dossiers')}/>}><div className="divide-y divide-border">{visibleLeads.length ? visibleLeads.slice(0,5).map((lead)=>{const score=lead.status==='Devis envoyé'?92:lead.status==='RDV planifié'?84:lead.status==='Qualifié'?78:lead.status==='À rappeler'?65:48;return <div key={lead.id} className="flex items-center gap-3 px-4 py-3.5 sm:px-5"><span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary text-[11px] font-bold text-primary">{lead.initials}</span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-1.5 text-xs"><strong>{lead.name}</strong>{score>=78&&<Flame size={13} className="text-destructive" aria-label="Opportunité chaude"/>}</div><p className="mt-1 truncate text-[11px] text-muted-foreground">{lead.city} ({lead.zip.slice(0,2)}) · {lead.service} · {lead.source}</p><div className="mt-1 flex flex-wrap gap-2 text-[10px]"><span className="font-semibold text-primary">{lead.amount}</span><span className="text-muted-foreground">{lead.status}</span><span className="text-muted-foreground">Score {score}/100</span></div></div><Button size="sm" variant="outline" onClick={()=>openLead(lead)} className="shrink-0 px-2 sm:px-3">Traiter <ArrowRight size={13}/></Button></div>}) : <div className="px-5 py-9 text-center text-xs text-muted-foreground">Aucun dossier dans cette étape pour la sélection actuelle.</div>}</div>{stage==='Tous'&&highlights.length>0&&<div className="border-t border-border bg-canvas px-5 py-3 text-[11px] text-muted-foreground">{highlights.length} opportunités actives dans les dossiers affichés</div>}</Panel>
+    </div>
+  </div>;
+}
