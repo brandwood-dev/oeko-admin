@@ -6,12 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useOekoDemo } from '@/lib/oeko-demo';
-import { quotes, services, type View } from '@/lib/oeko-data';
+import { quotes, services, type Lead, type View } from '@/lib/oeko-data';
 
 type FieldSpec = { name: string; type?: string; options?: string[] | undefined; wide?: boolean };
 type Group = { title: string; fields: FieldSpec[] };
 const f = (name: string, type = 'text', wide = false, options?: string[]): FieldSpec => ({ name, type, wide, options });
 const groups: Record<string, Group[]> = {
+  dossiers: [
+    { title: 'Contact', fields: [f('Nom complet'),f('Téléphone','tel'),f('Email','email'),f('Adresse','text',true),f('Ville'),f('Code postal')] },
+    { title: 'Projet de rénovation', fields: [f('Service','text',false,services),f('Budget estimé','number'),f('Description','textarea',true)] },
+    { title: 'Suivi commercial', fields: [f('Source','text',false,['Google Ads','SEO','Meta','Appels','Email','Apporteurs']),f('Commercial','text',false,['Laurent Moreau','Sophie Martin','Thomas Leroy','Non attribué']),f('Statut','text',false,['Nouveau','À qualifier','Qualifié','À rappeler'])] },
+  ],
   articles: [
     { title: 'Informations générales', fields: [f('Titre','text',true),f('Slug'),f('Catégorie','text',false,['Guide','Conseils','Actualités']),f('Résumé','textarea',true),f('Image principale','file',true)] },
     { title: 'Contenu de l’article', fields: [f('Contenu','textarea',true),f('FAQ','textarea',true),f('CTA'),f('Auteur')] },
@@ -48,14 +53,15 @@ function Field({ spec, value }: { spec: FieldSpec; value?: string | undefined })
 function Section({title,children}:{title:string;children:React.ReactNode}) { return <section className="border-t border-border py-7 first:border-t-0 first:pt-0"><h2 className="mb-5 text-base font-bold">{title}</h2>{children}</section>; }
 export function OekoSubpage({section,item,wide=false}:{section:string;item:string;wide?:boolean}) {
   const navigate = useNavigate();
-  const { leadList, entries, addEntry } = useOekoDemo();
+  const { leadList, setLeadList, entries, addEntry } = useOekoDemo();
   const [feedback,setFeedback] = useState('');
   const [preview,setPreview] = useState(false);
     const base = section === 'dossiers' || section === 'qualification' ? section : parent[section];
   const back = base ? `/${base}` : '/';
   const lead = leadList.find(l=>l.id === item);
-  const isLead = section === 'dossiers' || section === 'qualification';
-  const title = isLead ? lead?.name ?? 'Dossier introuvable' : item === 'nouveau' ? section==='articles'?'Nouvel article':section==='realisations'?'Nouvelle réalisation':`Nouveau ${labels[section]?.toLowerCase() ?? 'document'}` : item === 'vente' ? 'Enregistrer une vente' : item === 'perte' ? 'Enregistrer une perte' : `Modifier ${labels[section]?.toLowerCase() ?? 'document'}`;
+  const isLead = (section === 'dossiers' || section === 'qualification') && item !== 'nouveau';
+  const isNewLead = (section === 'dossiers' || section === 'qualification') && item === 'nouveau';
+  const title = isLead ? lead?.name ?? 'Dossier introuvable' : isNewLead ? 'Nouveau dossier' : item === 'nouveau' ? section==='articles'?'Nouvel article':section==='realisations'?'Nouvelle réalisation':`Nouveau ${labels[section]?.toLowerCase() ?? 'document'}` : item === 'vente' ? 'Enregistrer une vente' : item === 'perte' ? 'Enregistrer une perte' : `Modifier ${labels[section]?.toLowerCase() ?? 'document'}`;
   const saved = entries.find(e=>e.section===section && e.title===item);
   const existing = item !== 'nouveau' && item !== 'vente' && item !== 'perte' ? item : '';
   const quote = section === 'devis' ? quotes.find(q=>q.ref===item) : undefined;
@@ -64,6 +70,15 @@ export function OekoSubpage({section,item,wide=false}:{section:string;item:strin
   const save = (e:FormEvent<HTMLFormElement>, override?:string) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
+    if (isNewLead) {
+      const name = String(data.get('Nom complet') || '').trim();
+      if (!name) return;
+      const id = `OE-${Date.now()}`;
+      const newLead: Lead = { id, name, initials: name.split(/\s+/).map(part => part[0]).slice(0,2).join('').toUpperCase(), city:String(data.get('Ville') || ''),zip:String(data.get('Code postal') || ''),phone:String(data.get('Téléphone') || ''),email:String(data.get('Email') || ''),service:String(data.get('Service') || ''),source:String(data.get('Source') || ''),status:String(data.get('Statut') || 'Nouveau'),date:'Aujourd’hui',owner:String(data.get('Commercial') || 'Non attribué'),amount:`${Number(data.get('Budget estimé') || 0).toLocaleString('fr-FR')} €`,next:'Aucune action',address:String(data.get('Adresse') || ''),description:String(data.get('Description') || '') };
+      setLeadList(previous => [newLead, ...previous]);
+      navigate({to:`/dossiers/${id}`});
+      return;
+    }
     const recordSection = section === 'devis' && (item === 'vente' || item === 'perte') ? item : section;
     const recordTitle = String(data.get('Titre') || data.get('Nom') || data.get('Référence') || data.get('Prospect') || (recordSection==='vente'?'Vente enregistrée':recordSection==='perte'?'Perte enregistrée':'Sans titre'));
     addEntry({section: recordSection,title:recordTitle,detail:section==='devis' ? `${String(data.get('Prospect') || '')} · ${String(data.get('Service') || '')} · ${String(data.get('Montant HT') || '')} €` : String(data.get('Catégorie') || data.get('Service') || data.get('Ville') || ''),status:override || String(data.get('Statut') || 'Enregistré'),date:new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'short',year:'numeric'}).format(new Date())});
