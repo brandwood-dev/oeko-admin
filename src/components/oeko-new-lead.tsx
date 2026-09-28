@@ -93,7 +93,20 @@ export function OekoNewLead() {
           <L label="Téléphone *"><Input type="tel" value={v.phone} onChange={set('phone')} placeholder="06 12 34 56 78" /></L>
           <L label="Email"><Input type="email" value={v.email} onChange={set('email')} placeholder="nom@exemple.fr" /></L>
         </div>
-        {dup && <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900"><AlertTriangle size={16} /><span className="flex-1">Doublon possible : <b>{dup.name}</b> ({dup.id} · {dup.city})</span><Button size="sm" variant="outline" type="button" onClick={() => navigate({ to: `/dossiers/${dup.id}` })}>Ouvrir le dossier</Button></div>}
+        {dup && <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+          <div className="flex items-start gap-3"><AlertTriangle size={17} className="mt-0.5 shrink-0" /><div className="min-w-0">
+            <p className="font-bold">Doublon détecté</p>
+            <p className="mt-0.5 text-xs">Un dossier existe déjà pour <b>{dup.name}</b> · {dup.id} · {dup.city} ({dup.zip.slice(0, 2)}) · {dup.phone} · {dup.service}.</p>
+            {dupOk === dup.id && <p className="mt-1 text-xs font-semibold">Création maintenue malgré le doublon.</p>}
+          </div></div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" type="button" onClick={() => navigate({ to: `/dossiers/${dup.id}` })}>Consulter le dossier existant</Button>
+            <Button size="sm" variant="outline" type="button" onClick={attachToExisting}>Rattacher cette demande</Button>
+            <Button size="sm" variant="outline" type="button" onClick={() => create(false, dup.id)}>Nouveau projet pour ce contact</Button>
+            <Button size="sm" variant="outline" type="button" onClick={() => { setDupOk(dup.id); setToast('Doublon ignoré : vous pouvez créer le dossier.'); window.setTimeout(() => setToast(''), 3000); }} disabled={dupOk === dup.id}>Continuer malgré le doublon</Button>
+            <Button size="sm" variant="ghost" type="button" onClick={() => navigate({ to: '/dossiers' })}>Annuler la création</Button>
+          </div>
+        </div>}
       </Card>
 
       <Card icon={<Home size={18} />} title="Logement" step={2}>
