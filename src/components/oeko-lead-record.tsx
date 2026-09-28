@@ -4,8 +4,10 @@ import { Archive, ArchiveRestore, Calendar, Check, ChevronRight, FileText, Mail,
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { OekoLeadEditDialog, OekoTaskPanel } from './oeko-lead-edit';
 import { useOekoDemo } from '@/lib/oeko-demo';
 import { OWNERS, type Lead } from '@/lib/oeko-data';
+
 
 const stages = ['Nouveau', 'Qualifié', 'RDV planifié', 'Devis envoyé', 'Vente'];
 const stageIndex = (s: string) => {
@@ -24,7 +26,7 @@ function Card({ title, action, children }: { title: string; action?: React.React
 
 export function OekoLeadRecord({ lead, notify }: { lead: Lead; notify: (m: string) => void }) {
   const navigate = useNavigate();
-  const { notes, addNote, updateLead, rdvList, addRdv, quoteList, docs, addDoc, events, addEvent } = useOekoDemo();
+  const { notes, addNote, updateLead, rdvList, addRdv, quoteList, docs, addDoc, events, addEvent, setPrefillLeadId } = useOekoDemo();
   const [tab, setTab] = useState<(typeof tabs)[number]>('Activité');
   const [kind, setKind] = useState('Note');
   const [text, setText] = useState('');
@@ -32,6 +34,9 @@ export function OekoLeadRecord({ lead, notify }: { lead: Lead; notify: (m: strin
   const [time, setTime] = useState('');
   const [docName, setDocName] = useState('');
   const [docKind, setDocKind] = useState('Devis');
+  const [editOpen, setEditOpen] = useState(false);
+  const goPrefilled = (item: string) => { setPrefillLeadId(lead.id); navigate({ to: '/$section/$item', params: { section: item === 'rdv' ? 'planning' : 'devis', item: item === 'rdv' ? 'nouveau' : item } }); };
+
   const current = stageIndex(lead.status);
   const archived = lead.status === 'Archivé' || lead.archived;
   const setStatus = (status: string) => { updateLead(lead.id, { status, archived: status === 'Archivé' }, 'A modifié le statut d’un dossier'); addEvent({ leadId: lead.id, kind: 'Statut', title: `Statut : ${status}`, body: '', who: 'Alexandre Martin' }); notify(`Statut : ${status}.`); };
