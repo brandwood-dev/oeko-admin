@@ -172,5 +172,6 @@ export function OekoNewLead() {
         </div>
       </div>
     </aside>
+    {toast && <div role="status" className="fixed bottom-5 right-5 z-50 rounded bg-primary px-4 py-3 text-xs font-semibold text-primary-foreground shadow-lg">{toast}</div>}
   </div>;
 }
