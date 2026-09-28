@@ -14,7 +14,7 @@ import { services, type Lead, type View } from '@/lib/oeko-data';
 type FieldSpec = { name: string; type?: string; options?: string[] | undefined; wide?: boolean };
 type Group = { title: string; fields: FieldSpec[] };
 const f = (name: string, type = 'text', wide = false, options?: string[]): FieldSpec => ({ name, type, wide, options });
-const buildGroups = (leadOptions: string[]): Record<string, Group[]> => ({
+const buildGroups = (leadOptions: string[], quoteOptions: string[]): Record<string, Group[]> => ({
   dossiers: [
     { title: 'Contact', fields: [f('Nom complet'),f('Téléphone','tel'),f('Email','email'),f('Adresse','text',true),f('Ville'),f('Code postal')] },
     { title: 'Projet de rénovation', fields: [f('Service','text',false,services),f('Budget estimé','number'),f('Description','textarea',true)] },
@@ -39,9 +39,9 @@ const buildGroups = (leadOptions: string[]): Record<string, Group[]> => ({
   planning: [{ title: 'Rendez-vous', fields: [f('Prospect','text',true,leadOptions),f('Type','text',false,['Visite technique','Appel de suivi','Présentation de devis']),f('Date','date'),f('Heure','time'),f('Durée','text',false,['30 min','1 heure','1 h 30','2 heures']),f('Adresse','text',true),f('Commercial','text',false,['Laurent Moreau','Sophie Martin','Thomas Leroy']),f('Commentaire','textarea',true)] }],
   devis: [
     { title: 'Informations du devis', fields: [f('Référence'),f('Date','date'),f('Prospect'),f('Service','text',false,services),f('Montant HT','number'),f('Montant TTC','number'),f('PDF','file',true)] },
-    { title: 'Suivi commercial', fields: [f('Commentaire','textarea',true),f('Statut','text',false,['À préparer','Envoyé','À relancer','Accepté','Refusé'])] },
+    { title: 'Suivi commercial', fields: [f('Date de relance','date'),f('Statut','text',false,['À préparer','Envoyé','À relancer','Accepté','Refusé']),f('Commentaire de relance','textarea',true)] },
   ],
-  vente: [{ title: 'Vente conclue', fields: [f('Prospect','text',true,leadOptions),f('Date','date'),f('Montant','number'),f('Service','text',false,services),f('Devis concerné'),f('Commentaire','textarea',true)] }],
+  vente: [{ title: 'Vente conclue', fields: [f('Prospect','text',true,leadOptions),f('Date','date'),f('Montant','number'),f('Service','text',false,services),f('Devis concerné','text',false,quoteOptions),f('Commentaire','textarea',true)] }],
   perte: [{ title: 'Motif de perte', fields: [f('Prospect','text',true,leadOptions),f('Concurrent'),f('Motif','text',false,['Trop cher','Concurrent','Projet abandonné','Projet reporté','Hors cible','Raison technique','Raison administrative','Impossible à joindre','Autre']),f('Commentaire','textarea',true)] }],
 });
 const labels: Record<string,string> = { articles:'Article',services:'Service',realisations:'Réalisation',planning:'Rendez-vous',devis:'Devis',vente:'Vente',perte:'Perte' };
@@ -60,7 +60,8 @@ export function OekoSubpage({section,item,wide=false}:{section:string;item:strin
   const prefillLead = leadList.find(l => l.id === prefillLeadId);
   // Le prospect courant est placé en tête de liste pour ne jamais rattacher le premier dossier par défaut.
   const leadOptions = [...leadList].sort((a, b) => (a.id === prefillLeadId ? -1 : b.id === prefillLeadId ? 1 : 0)).map(l => `${l.name} · ${l.id}`);
-  const groups = buildGroups(leadOptions);
+  const quoteOptions = ['—', ...quoteList.filter(q => !prefillLeadId || q.leadId === prefillLeadId).map(q => `${q.ref} · ${q.total}`), ...quoteList.map(q => `${q.ref} · ${q.total}`)].filter((v, i, a) => a.indexOf(v) === i);
+  const groups = buildGroups(leadOptions, quoteOptions);
 
   const pickLead = (value: string) => leadList.find(l => value.includes(l.id)) ?? leadList.find(l => l.name === value);
   const [feedback,setFeedback] = useState('');
@@ -111,8 +112,8 @@ export function OekoSubpage({section,item,wide=false}:{section:string;item:strin
         const amount = `${Number(data.get('Montant') || 0).toLocaleString('fr-FR')} €`;
         updateLead(target.id, { status: 'Vente', saleAmount: amount, next: 'Lancer le chantier' }, 'A enregistré une vente');
         addEvent({ leadId: target.id, kind: 'Vente', title: `Vente signée · ${amount}`, body: comment, who: target.owner });
-        const linked = String(data.get('Devis concerné') || '');
-        if (linked) updateQuote(linked, { status: 'Accepté' });
+        const linked = String(data.get('Devis concerné') || '').split(' · ')[0] ?? '';
+        if (linked && linked !== '—') updateQuote(linked, { status: 'Accepté' });
       } else {
         const reason = String(data.get('Motif') || 'Autre');
         updateLead(target.id, { status: 'Perdu', lossReason: reason, competitor: String(data.get('Concurrent') || ''), next: 'Aucune action' }, 'A enregistré une perte');
