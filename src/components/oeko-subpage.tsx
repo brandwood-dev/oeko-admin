@@ -55,7 +55,10 @@ function Field({ spec, value }: { spec: FieldSpec; value?: string | undefined })
 function Section({title,children}:{title:string;children:React.ReactNode}) { return <section className="border-t border-border py-7 first:border-t-0 first:pt-0"><h2 className="mb-5 text-base font-bold">{title}</h2>{children}</section>; }
 export function OekoSubpage({section,item,wide=false}:{section:string;item:string;wide?:boolean}) {
   const navigate = useNavigate();
-  const { leadList, setLeadList, entries, addEntry } = useOekoDemo();
+  const { leadList, setLeadList, entries, addEntry, quoteList, updateQuote, addRdv, updateLead, addEvent } = useOekoDemo();
+  const leadOptions = leadList.map(l => `${l.name} · ${l.id}`);
+  const groups = buildGroups(leadOptions);
+  const pickLead = (value: string) => leadList.find(l => value.includes(l.id)) ?? leadList.find(l => l.name === value);
   const [feedback,setFeedback] = useState('');
   const [preview,setPreview] = useState(false);
     const base = section === 'dossiers' || section === 'qualification' ? section : parent[section];
