@@ -44,6 +44,9 @@ export function OekoDashboard({leadList, openLead, go, newDossier}:{leadList:Lea
   const [period,setPeriod] = useState<Period>('Ce mois');
   const [scope,setScope] = useState<Scope>('Entreprise');
   const [stage,setStage] = useState<Stage>('Tous');
+  const [serviceF,setServiceF]=useState('Tous les services');
+  const [ownerF,setOwnerF]=useState('Tous les commerciaux');
+  const [sourceF,setSourceF]=useState('Toutes les sources');
   const [done,setDone] = useState<string[]>([]);
   const periodScale = period === '7 jours' ? .28 : period === 'Trimestre' ? 2.75 : 1;
   const scopeScale = scope === 'Entreprise' ? 1 : .38;
@@ -53,6 +56,9 @@ export function OekoDashboard({leadList, openLead, go, newDossier}:{leadList:Lea
   const achievement = Math.round(signed / target * 100);
   const visibleLeads = useMemo(() => leadList.filter(l => {
     if (scope === 'Ma performance' && l.owner !== 'Laurent Moreau') return false;
+    if (serviceF !== 'Tous les services' && l.service !== serviceF) return false;
+    if (ownerF !== 'Tous les commerciaux' && l.owner !== ownerF) return false;
+    if (sourceF !== 'Toutes les sources' && l.source !== sourceF) return false;
     if (stage === 'Tous') return true;
     if (stage === 'Nouveaux leads') return ['Nouveau','À qualifier','À rappeler'].includes(l.status);
     if (stage === 'Qualifiés') return ['Qualifié','RDV planifié','Devis envoyé','Signé'].includes(l.status);
@@ -70,7 +76,11 @@ export function OekoDashboard({leadList, openLead, go, newDossier}:{leadList:Lea
       </div>
       <div className="mt-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="w-full max-w-md"><div className="flex items-end justify-between gap-2 text-xs"><span className="font-semibold">Objectif de CA signé</span><span className="font-bold">{euro(signed)} <span className="font-normal text-muted-foreground">/ {euro(target)}</span></span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-label="Objectif de CA signé" aria-valuenow={achievement} aria-valuemin={0} aria-valuemax={100}><div className="h-full rounded-full bg-primary" style={{width:`${achievement}%`}}/></div><p className="mt-1.5 text-[11px] text-muted-foreground">{achievement} % atteint · {euro(target - signed)} restants</p></div>
-        <div className="flex flex-wrap gap-2"><div role="group" aria-label="Période du tableau de bord" className="inline-flex gap-1 rounded-md border border-border bg-canvas p-1">{periods.map(p=><Button key={p} variant="ghost" size="sm" aria-pressed={period===p} onClick={()=>setPeriod(p)} className={`h-8 px-3 ${period===p?'bg-background font-bold shadow-sm hover:bg-background':'text-muted-foreground'}`}>{p}</Button>)}</div><div role="group" aria-label="Vue commerciale" className="inline-flex gap-1 rounded-md border border-border bg-canvas p-1">{(['Entreprise','Ma performance'] as Scope[]).map(s=><Button key={s} variant="ghost" size="sm" aria-pressed={scope===s} onClick={()=>setScope(s)} className={`h-8 px-3 ${scope===s?'bg-background font-bold shadow-sm hover:bg-background':'text-muted-foreground'}`}>{s}</Button>)}</div></div>
+        <div className="flex flex-wrap gap-2"><div role="group" aria-label="Période du tableau de bord" className="inline-flex gap-1 rounded-md border border-border bg-canvas p-1">{periods.map(p=><Button key={p} variant="ghost" size="sm" aria-pressed={period===p} onClick={()=>setPeriod(p)} className={`h-8 px-3 ${period===p?'bg-background font-bold shadow-sm hover:bg-background':'text-muted-foreground'}`}>{p}</Button>)}</div><div role="group" aria-label="Vue commerciale" className="inline-flex gap-1 rounded-md border border-border bg-canvas p-1">{(['Entreprise','Ma performance'] as Scope[]).map(s=><Button key={s} variant="ghost" size="sm" aria-pressed={scope===s} onClick={()=>setScope(s)} className={`h-8 px-3 ${scope===s?'bg-background font-bold shadow-sm hover:bg-background':'text-muted-foreground'}`}>{s}</Button>)}</div>
+        <select aria-label="Filtrer par service" value={serviceF} onChange={e=>setServiceF(e.target.value)} className="h-10 rounded-md border border-border bg-canvas px-3 text-xs">{['Tous les services',...new Set(leadList.map(l=>l.service))].map(o=><option key={o}>{o}</option>)}</select>
+        <select aria-label="Filtrer par commercial" value={ownerF} onChange={e=>setOwnerF(e.target.value)} className="h-10 rounded-md border border-border bg-canvas px-3 text-xs">{['Tous les commerciaux',...new Set(leadList.map(l=>l.owner))].map(o=><option key={o}>{o}</option>)}</select>
+        <select aria-label="Filtrer par source" value={sourceF} onChange={e=>setSourceF(e.target.value)} className="h-10 rounded-md border border-border bg-canvas px-3 text-xs">{['Toutes les sources',...new Set(leadList.map(l=>l.source))].map(o=><option key={o}>{o}</option>)}</select>
+        <span className="self-center rounded-full bg-lime/35 px-3 py-1 text-[11px] font-semibold">Données de démonstration</span></div>
       </div>
     </section>
     <div className="grid gap-3 md:grid-cols-3">
