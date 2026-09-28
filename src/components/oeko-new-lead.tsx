@@ -165,9 +165,10 @@ export function OekoNewLead() {
         </div>
         <p className="mt-2 text-[11px] text-muted-foreground">Estimation indicative de démonstration.</p>
         <div className="mt-5 space-y-2">
-          <Button className="w-full" disabled={!valid} onClick={() => create(false)}><Check size={16} /> Créer et ouvrir la fiche</Button>
-          <Button className="w-full" variant="outline" disabled={!valid} onClick={() => create(true)}><CalendarPlus size={16} /> Créer & planifier un RDV</Button>
+          <Button className="w-full" disabled={!valid || dupBlocked} onClick={() => create(false)}><Check size={16} /> Créer et ouvrir la fiche</Button>
+          <Button className="w-full" variant="outline" disabled={!valid || dupBlocked} onClick={() => create(true)}><CalendarPlus size={16} /> Créer & planifier un RDV</Button>
           {!valid && <p className="text-center text-[11px] text-muted-foreground">Nom et téléphone requis</p>}
+          {valid && dupBlocked && <p className="text-center text-[11px] font-semibold text-destructive">Doublon détecté : choisissez une option dans l’étape 1.</p>}
         </div>
       </div>
     </aside>
