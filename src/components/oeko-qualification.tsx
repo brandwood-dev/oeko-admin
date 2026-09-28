@@ -45,6 +45,9 @@ export function OekoQualification({ openLead }: { openLead: (l: Lead) => void })
   const [taskNote, setTaskNote] = useState('');
   const [reasonFor, setReasonFor] = useState<string | null>(null);
   const [reason, setReason] = useState(LOSS_REASONS[0]!);
+  const [sortF, setSortF] = useState(SORTS[0]!);
+  const [err, setErr] = useState<{ owner?: string; task?: string }>({});
+  const [confirmAct, setConfirmAct] = useState<{ title: string; text: string; run: () => void } | null>(null);
 
   const counts = useMemo(() => leadList.reduce<Record<string, number>>((acc, l) => { const k = queueOf(l.status); acc[k] = (acc[k] ?? 0) + 1; return acc; }, {}), [leadList]);
   const activeFilters = [dateF !== DATES[0] && dateF, sourceF !== 'Toutes les sources' && sourceF, serviceF !== 'Tous les services' && serviceF, statusF !== 'Tous les statuts' && statusF].filter(Boolean) as string[];
