@@ -74,7 +74,7 @@ export function OekoSubpage({section,item,wide=false}:{section:string;item:strin
   const saved = entries.find(e=>e.section===section && e.title===item);
   const existing = item !== 'nouveau' && item !== 'vente' && item !== 'perte' ? item : '';
   const quote = section === 'devis' ? quoteList.find(q=>q.ref===item) : undefined;
-  const values: Record<string,string> = existing ? { Titre: existing, Nom: existing, Référence: existing, Prospect: quote?.name ?? existing, Service: quote?.service ?? '', 'Montant HT': quote?.amount.replace(/[^0-9]/g,'') ?? '', 'Montant TTC': quote?.total.replace(/[^0-9]/g,'') ?? '', Statut: quote?.status ?? '' } : {};
+  const values: Record<string,string> = existing ? { Titre: existing, Nom: existing, Référence: existing, Prospect: quote?.name ?? existing, Service: quote?.service ?? '', 'Montant HT': quote?.amount.replace(/[^0-9]/g,'') ?? '', 'Montant TTC': quote?.total.replace(/[^0-9]/g,'') ?? '', Statut: quote?.status ?? '' } : prefillLead ? { Prospect: `${prefillLead.name} · ${prefillLead.id}`, Service: prefillLead.service, Adresse: `${prefillLead.address}, ${prefillLead.zip} ${prefillLead.city}`, Commercial: prefillLead.owner, 'Devis concerné': quoteList.find(q => q.leadId === prefillLead.id)?.ref ?? '', Montant: (prefillLead.amount || '').replace(/[^0-9]/g, '') } : {};
   const notify = (message:string) => { setFeedback(message); window.setTimeout(()=>setFeedback(''),3500); };
   const save = (e:FormEvent<HTMLFormElement>, override?:string) => {
     e.preventDefault();
