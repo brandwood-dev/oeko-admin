@@ -122,7 +122,8 @@ export function OekoQualification({ openLead }: { openLead: (l: Lead) => void })
     </div>
 
     <div className="rounded-lg border border-border bg-card p-3">
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+        <select aria-label="Trier la file" value={sortF} onChange={e => setSortF(e.target.value)} className={sel}>{SORTS.map(o => <option key={o}>{o}</option>)}</select>
         <select aria-label="Filtrer par date" value={dateF} onChange={e => setDateF(e.target.value)} className={sel}>{DATES.map(o => <option key={o}>{o}</option>)}</select>
         <select aria-label="Filtrer par source" value={sourceF} onChange={e => setSourceF(e.target.value)} className={sel}>{['Toutes les sources', ...SOURCES].map(o => <option key={o}>{o}</option>)}</select>
         <select aria-label="Filtrer par service" value={serviceF} onChange={e => setServiceF(e.target.value)} className={sel}>{['Tous les services', ...new Set([...services, ...leadList.map(l => l.service)])].map(o => <option key={o}>{o}</option>)}</select>
