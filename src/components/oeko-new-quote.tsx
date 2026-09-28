@@ -35,8 +35,8 @@ const sel = 'h-10 w-full rounded-md border border-input bg-background px-3 text-
 
 export function OekoNewQuote() {
   const navigate = useNavigate();
-  const { leadList, addEntry, addQuote, updateLead } = useOekoDemo();
-  const [leadId, setLeadId] = useState(leadList[0]?.id ?? '');
+  const { leadList, addEntry, addQuote, updateLead, prefillLeadId, quoteList } = useOekoDemo();
+  const [leadId, setLeadId] = useState(leadList.find(l => l.id === prefillLeadId)?.id ?? leadList[0]?.id ?? '');
   const [lines, setLines] = useState<Line[]>(() => (catalog[0]?.items ?? []).map((l, i) => ({ ...l, id: i })));
   const [income, setIncome] = useState('Modestes');
   const [cee, setCee] = useState(true);
@@ -46,7 +46,7 @@ export function OekoNewQuote() {
   const [notes, setNotes] = useState('Travaux réalisés par une entreprise certifiée RGE. Délai d’intervention : 4 à 6 semaines après acceptation.');
   const [preview, setPreview] = useState(false);
   const lead = leadList.find(l => l.id === leadId);
-  const ref = 'DEV-2026-085';
+  const ref = `DEV-2026-${String(85 + quoteList.length - 4).padStart(3, '0')}`;
 
   const t = useMemo(() => {
     const ht = lines.reduce((s, l) => s + l.qty * l.price, 0) * (1 - discount / 100);
