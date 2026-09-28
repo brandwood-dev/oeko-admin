@@ -84,7 +84,7 @@ export function OekoNewQuote() {
         <div className="mb-4 flex flex-wrap items-center gap-2"><FileText size={16} className="text-primary"/><h2 className="text-sm font-bold">Ouvrages & prestations</h2>
           <div className="ml-auto flex flex-wrap gap-1.5">{catalog.map(c => <button key={c.trade} type="button" onClick={() => addPack(c.trade)} className="rounded-full border border-border px-3 py-1 text-[11px] font-semibold hover:border-primary hover:text-primary">+ {c.trade.split(' (')[0]}</button>)}</div>
         </div>
-        <div className="divide-y divide-border rounded-lg border border-border">{lines.map(l => <div key={l.id} className="grid gap-2 p-3 sm:grid-cols-[1fr_auto] sm:items-center">
+        <div className="divide-y divide-border rounded-lg border border-border">{lines.map(l => <div key={l.id} className="grid gap-2 p-3">
           <Input value={l.label} onChange={e => upd(l.id, { label: e.target.value })} aria-label="Désignation" className="h-9 font-medium"/>
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <Input type="number" value={l.qty} onChange={e => upd(l.id, { qty: Number(e.target.value) })} aria-label="Quantité" className="h-9 w-20"/>
