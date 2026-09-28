@@ -25,3 +25,12 @@
 - [x] En-tête de pilotage, indicateurs hiérarchisés, graphique comparatif et parcours commercial interactif
 - [x] CA par métier, performance équipe, actions et opportunités enrichies
 - [x] Préserver la carte des départements et vérifier les parcours desktop/mobile
+
+## Front V1 — interconnexions (fait)
+- [x] État partagé unique : dossiers, rendez-vous, devis, documents, événements, journal
+- [x] Pipeline harmonisé (Nouveau → Vente/Perdu) + Nurserie, Inexploitable, Abandon, Archivé/restauration
+- [x] RDV créés depuis la fiche ou le formulaire visibles dans le planning
+- [x] Devis créés visibles dans la fiche dossier et la liste Devis & ventes
+- [x] Vente / perte : statut, montant, motif, concurrent, timeline et journal
+- [x] Documents rattachés au dossier, données de qualification et tracking affichées
+- [x] Paramètres : ajout d’éléments ; erreurs d’import : résolution journalisée

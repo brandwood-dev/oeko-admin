@@ -2,9 +2,10 @@ import { useMemo, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { ChevronLeft, ChevronRight, Clock, MapPin, Navigation, Phone, X, FolderOpen, Car } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useOekoDemo } from '@/lib/oeko-demo';
+import type { Rdv } from '@/lib/oeko-data';
 
-type Kind = 'visite' | 'devis' | 'audit' | 'appel';
-type Rdv = { id: string; day: number; start: number; end: number; kind: Kind; client: string; lead: string; city: string; dep: string; address: string; phone: string; owner: string; project: string; status: string };
+type Kind = Rdv['kind'];
 
 const kinds: Record<Kind, { label: string; card: string; dot: string }> = {
   visite: { label: 'Visites techniques', card: 'border-l-primary bg-primary/10', dot: 'bg-primary' },
@@ -20,21 +21,9 @@ const owners = [
 const days = ['Lun. 21', 'Mar. 22', 'Mer. 23', 'Jeu. 24', 'Ven. 25', 'Sam. 26', 'Dim. 27'];
 const TODAY = 4, NOW = 11.33, H0 = 8, H1 = 19, ROW = 56;
 
-const rdvs: Rdv[] = [
-  { id: 'R1', day: 0, start: 9.5, end: 11.5, kind: 'visite', client: 'Foued Benali', lead: 'OE-24091', city: 'Créteil', dep: '94', address: '18 rue du Général Leclerc, 94000 Créteil', phone: '06 12 84 35 71', owner: 'Laurent Moreau', project: 'PAC + ITE', status: 'Effectué' },
-  { id: 'R2', day: 0, start: 14, end: 14.5, kind: 'appel', client: 'Marc Lefèvre', lead: 'OE-24087', city: 'Boulogne', dep: '92', address: '33 rue de Sèvres, 92100 Boulogne-Billancourt', phone: '06 28 75 49 32', owner: 'Sophie Martin', project: 'Ravalement', status: 'Effectué' },
-  { id: 'R3', day: 1, start: 10, end: 12, kind: 'audit', client: 'Sofia Rahmani', lead: 'OE-24086', city: 'Cergy', dep: '95', address: '5 allée des Tilleuls, 95000 Cergy', phone: '06 34 92 17 80', owner: 'Sophie Martin', project: 'Climatisation', status: 'Effectué' },
-  { id: 'R4', day: 2, start: 14, end: 15, kind: 'appel', client: 'Nadia Bensalem', lead: 'OE-24088', city: 'Saint-Denis', dep: '93', address: '12 rue Gabriel Péri, 93200 Saint-Denis', phone: '06 55 42 87 19', owner: 'Thomas Leroy', project: 'Menuiseries', status: 'Reporté' },
-  { id: 'R5', day: 2, start: 9, end: 11, kind: 'visite', client: 'Laurent Dubois', lead: 'OE-24090', city: 'Versailles', dep: '78', address: '24 avenue de Paris, 78000 Versailles', phone: '06 73 45 19 08', owner: 'Laurent Moreau', project: 'PAC', status: 'Effectué' },
-  { id: 'R6', day: 3, start: 16, end: 17.5, kind: 'devis', client: 'Laurent Dubois', lead: 'OE-24090', city: 'Versailles', dep: '78', address: '24 avenue de Paris, 78000 Versailles', phone: '06 73 45 19 08', owner: 'Sophie Martin', project: 'PAC', status: 'Effectué' },
-  { id: 'R7', day: 4, start: 9, end: 10.5, kind: 'visite', client: 'Camille Petit', lead: 'OE-24089', city: 'Montreuil', dep: '93', address: '7 rue de la République, 93100 Montreuil', phone: '06 89 24 11 63', owner: 'Laurent Moreau', project: 'Toiture', status: 'Effectué' },
-  { id: 'R8', day: 4, start: 11.5, end: 13, kind: 'devis', client: 'Nadia Bensalem', lead: 'OE-24088', city: 'Saint-Denis', dep: '93', address: '12 rue Gabriel Péri, 93200 Saint-Denis', phone: '06 55 42 87 19', owner: 'Thomas Leroy', project: 'Menuiseries', status: 'Confirmé' },
-  { id: 'R9', day: 4, start: 14.5, end: 16.5, kind: 'visite', client: 'Foued Benali', lead: 'OE-24091', city: 'Meaux', dep: '77', address: '4 rue Saint-Rémy, 77100 Meaux', phone: '06 12 84 35 71', owner: 'Laurent Moreau', project: 'PAC + ITE', status: 'Confirmé' },
-  { id: 'R10', day: 4, start: 16, end: 16.5, kind: 'appel', client: 'Laurent Dubois', lead: 'OE-24090', city: 'Versailles', dep: '78', address: '24 avenue de Paris, 78000 Versailles', phone: '06 73 45 19 08', owner: 'Sophie Martin', project: 'PAC', status: 'Confirmé' },
-  { id: 'R11', day: 5, start: 10, end: 12, kind: 'audit', client: 'Marc Lefèvre', lead: 'OE-24087', city: 'Boulogne', dep: '92', address: '33 rue de Sèvres, 92100 Boulogne-Billancourt', phone: '06 28 75 49 32', owner: 'Thomas Leroy', project: 'Ravalement', status: 'Confirmé' },
-];
 const fmt = (h: number) => `${String(Math.floor(h)).padStart(2, '0')}:${String(Math.round((h % 1) * 60)).padStart(2, '0')}`;
 const initials = (n: string) => owners.find(o => o.name === n)?.initials ?? '?';
+
 
 function Card({ r, onOpen, compact }: { r: Rdv; onOpen: (r: Rdv) => void; compact?: boolean }) {
   const k = kinds[r.kind];
@@ -51,8 +40,8 @@ export function OekoPlanning() {
   const [kindOn, setKindOn] = useState<Kind[]>(['visite', 'devis', 'audit', 'appel']);
   const [ownerOn, setOwnerOn] = useState<string[]>(owners.map(o => o.name));
   const [open, setOpen] = useState<Rdv | null>(null);
-  const [statuses, setStatuses] = useState<Record<string, string>>({});
-  const list = useMemo(() => offset !== 0 ? [] : rdvs.map(r => ({ ...r, status: statuses[r.id] ?? r.status })).filter(r => kindOn.includes(r.kind) && ownerOn.includes(r.owner)), [offset, kindOn, ownerOn, statuses]);
+  const { rdvList, updateRdv } = useOekoDemo();
+  const list = useMemo(() => offset !== 0 ? [] : rdvList.filter(r => kindOn.includes(r.kind) && ownerOn.includes(r.owner)), [offset, kindOn, ownerOn, rdvList]);
   const toggle = <T,>(arr: T[], v: T, set: (a: T[]) => void) => set(arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]);
   const hours = Array.from({ length: H1 - H0 }, (_, i) => H0 + i);
   const shownDays = mode === 'Jour' ? [TODAY] : [0, 1, 2, 3, 4, 5, 6];
@@ -108,9 +97,9 @@ export function OekoPlanning() {
           <div className="flex items-center gap-3"><Clock size={16} className="text-muted-foreground" /><span>{days[current.day]} septembre · {fmt(current.start)} – {fmt(current.end)}</span></div>
           <div className="flex items-start gap-3"><MapPin size={16} className="mt-0.5 text-muted-foreground" /><div><div>{current.address}</div><div className="mt-2 flex gap-2"><Button asChild variant="outline" size="sm"><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(current.address)}`} target="_blank" rel="noreferrer"><MapPin size={14} /> Maps</a></Button><Button asChild variant="outline" size="sm"><a href={`https://waze.com/ul?q=${encodeURIComponent(current.address)}`} target="_blank" rel="noreferrer"><Navigation size={14} /> Waze</a></Button></div></div></div>
           <div className="flex items-center gap-3"><Phone size={16} className="text-muted-foreground" /><a href={`tel:${current.phone.replaceAll(' ', '')}`} className="font-semibold text-primary hover:underline">{current.phone}</a></div>
-          <div><div className="mb-2 text-xs font-semibold text-muted-foreground">Statut du rendez-vous</div><div className="grid grid-cols-2 gap-2">{['Confirmé', 'Effectué', 'Reporté', 'Annulé / Absent'].map(s => <Button key={s} size="sm" variant={current.status === s ? 'default' : 'outline'} onClick={() => setStatuses(p => ({ ...p, [current.id]: s }))}>{s}</Button>)}</div></div>
-          <div><label htmlFor="rdv-owner" className="mb-2 block text-xs font-semibold text-muted-foreground">Commercial</label><select id="rdv-owner" defaultValue={current.owner} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">{owners.map(o => <option key={o.name}>{o.name}</option>)}</select></div>
-          <div><label htmlFor="rdv-cr" className="mb-2 block text-xs font-semibold text-muted-foreground">Compte-rendu</label><textarea id="rdv-cr" className="min-h-24 w-full rounded-md border border-input bg-background p-3 text-sm" placeholder="Observations, mesures, points à chiffrer…" /></div>
+          <div><div className="mb-2 text-xs font-semibold text-muted-foreground">Statut du rendez-vous</div><div className="grid grid-cols-2 gap-2">{['Confirmé', 'Effectué', 'Reporté', 'Annulé / Absent'].map(s => <Button key={s} size="sm" variant={current.status === s ? 'default' : 'outline'} onClick={() => updateRdv(current.id, { status: s })}>{s}</Button>)}</div></div>
+          <div><label htmlFor="rdv-owner" className="mb-2 block text-xs font-semibold text-muted-foreground">Commercial</label><select id="rdv-owner" value={current.owner} onChange={e => updateRdv(current.id, { owner: e.target.value })} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">{owners.map(o => <option key={o.name}>{o.name}</option>)}</select></div>
+          <div><label htmlFor="rdv-cr" className="mb-2 block text-xs font-semibold text-muted-foreground">Compte-rendu</label><textarea id="rdv-cr" value={current.report ?? ''} onChange={e => updateRdv(current.id, { report: e.target.value })} className="min-h-24 w-full rounded-md border border-input bg-background p-3 text-sm" placeholder="Observations, mesures, points à chiffrer…" /></div>
         </div>
         <div className="mt-auto border-t border-border p-5"><Button asChild className="w-full"><Link to="/$section/$item" params={{ section: 'dossiers', item: current.lead }}><FolderOpen size={16} /> Consulter le dossier CRM ({current.lead})</Link></Button></div>
       </aside>

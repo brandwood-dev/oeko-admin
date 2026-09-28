@@ -37,7 +37,7 @@ function Card({ icon, title, step, children }: { icon: React.ReactNode; title: s
 
 export function OekoNewLead() {
   const navigate = useNavigate();
-  const { leadList, setLeadList } = useOekoDemo();
+  const { leadList, setLeadList, addLog, addEvent } = useOekoDemo();
   const [v, setV] = useState({ civ: 'M.', first: '', last: '', phone: '', email: '', address: '', city: '', zip: '', housing: 'Maison individuelle', year: '1975–2000', surface: '', heating: 'Chaudière fioul', owner: 'Propriétaire occupant', income: 'Modestes', persons: '3', source: 'Google Ads', commercial: 'Non attribué', urgency: 'Sous 3 mois', description: '' });
   const [picked, setPicked] = useState<string[]>([]);
   const set = (k: keyof typeof v) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setV({ ...v, [k]: e.target.value });
@@ -60,8 +60,16 @@ export function OekoNewLead() {
     if (!valid) return;
     const name = `${v.first} ${v.last}`.trim();
     const id = `OE-${Date.now()}`;
-    const lead: Lead = { id, name, initials: name.split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase(), city: v.city, zip: v.zip, phone: v.phone, email: v.email, service: picked.join(' + ') || 'À définir', source: v.source, status: 'Nouveau', date: 'Aujourd’hui', owner: v.commercial, amount: `${budget.toLocaleString('fr-FR')} €`, next: plan ? 'Visite technique à planifier' : 'Aucune action', address: v.address, description: `${v.housing} · ${v.year} · ${v.surface || '?'} m² · ${v.heating} · ${v.owner} · Revenus ${v.income} · ${v.urgency}. ${v.description}` };
+    const lead: Lead = { id, name, initials: name.split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase(), city: v.city, zip: v.zip, phone: v.phone, email: v.email, service: picked.join(' + ') || 'À définir', source: v.source, status: 'Nouveau', date: 'Aujourd’hui', owner: v.commercial, amount: `${budget.toLocaleString('fr-FR')} €`, next: plan ? 'Visite technique à planifier' : 'Aucune action', address: v.address, description: v.description || `${v.housing} · ${v.year} · ${v.surface || '?'} m² · ${v.heating} · ${v.owner} · Revenus ${v.income} · ${v.urgency}.`,
+      housing: v.housing, year: v.year, surface: v.surface, heating: v.heating, occupancy: v.owner, income: v.income, persons: v.persons,
+      urgency: v.urgency, priority: v.urgency === 'Immédiate' ? 'Haute' : v.urgency === 'Simple information' ? 'Basse' : 'Normale',
+      potential: budget >= 20000 ? 'Élevé' : budget >= 10000 ? 'Moyen' : 'Faible', consent: true,
+      channel: ['Google Ads', 'Meta'].includes(v.source) ? 'Publicité payante' : v.source === 'SEO' ? 'Référencement naturel' : 'Contact direct',
+      campaign: v.source === 'Google Ads' ? 'IDF · Rénovation 2026' : '—', landing: '/demande-de-devis',
+      utm: `utm_source=${v.source.toLowerCase().replaceAll(' ', '_')}&utm_medium=crm&utm_campaign=saisie_manuelle` };
     setLeadList(prev => [lead, ...prev]);
+    addLog('A créé un dossier', `${name} · ${id}`);
+    addEvent({ leadId: id, kind: 'Création', title: 'Dossier créé depuis le back-office', body: `${lead.service} · ${lead.amount}`, who: 'Alexandre Martin' });
     navigate({ to: plan ? '/planning/nouveau' : `/dossiers/${id}` });
   };
 
