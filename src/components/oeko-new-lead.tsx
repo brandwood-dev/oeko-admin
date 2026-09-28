@@ -79,8 +79,8 @@ export function OekoNewLead() {
       campaign: v.source === 'Google Ads' ? 'IDF · Rénovation 2026' : '—', landing: '/demande-de-devis',
       utm: `utm_source=${v.source.toLowerCase().replaceAll(' ', '_')}&utm_medium=crm&utm_campaign=saisie_manuelle` };
     setLeadList(prev => [lead, ...prev]);
-    addLog('A créé un dossier', `${name} · ${id}`);
-    addEvent({ leadId: id, kind: 'Création', title: 'Dossier créé depuis le back-office', body: `${lead.service} · ${lead.amount}`, who: 'Alexandre Martin' });
+    addLog(newProjectOf ? 'A créé un nouveau projet pour un contact existant' : 'A créé un dossier', `${name} · ${id}${newProjectOf ? ` · contact ${newProjectOf}` : ''}`);
+    addEvent({ leadId: id, kind: 'Création', title: newProjectOf ? `Nouveau projet du contact ${newProjectOf}` : 'Dossier créé depuis le back-office', body: `${lead.service} · ${lead.amount}`, who: 'Alexandre Martin' });
     navigate({ to: plan ? '/planning/nouveau' : `/dossiers/${id}` });
   };
 
