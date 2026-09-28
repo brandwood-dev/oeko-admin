@@ -40,6 +40,8 @@ export function OekoNewLead() {
   const { leadList, setLeadList, addLog, addEvent } = useOekoDemo();
   const [v, setV] = useState({ civ: 'M.', first: '', last: '', phone: '', email: '', address: '', city: '', zip: '', housing: 'Maison individuelle', year: '1975–2000', surface: '', heating: 'Chaudière fioul', owner: 'Propriétaire occupant', income: 'Modestes', persons: '3', source: 'Google Ads', commercial: 'Non attribué', urgency: 'Sous 3 mois', description: '' });
   const [picked, setPicked] = useState<string[]>([]);
+  const [dupOk, setDupOk] = useState<string | null>(null);
+  const [toast, setToast] = useState('');
   const set = (k: keyof typeof v) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setV({ ...v, [k]: e.target.value });
 
   const budget = trades.filter(t => picked.includes(t.id)).reduce((s, t) => s + t.price, 0);
