@@ -13,7 +13,7 @@ import { quotes, services, type Lead, type View } from '@/lib/oeko-data';
 type FieldSpec = { name: string; type?: string; options?: string[] | undefined; wide?: boolean };
 type Group = { title: string; fields: FieldSpec[] };
 const f = (name: string, type = 'text', wide = false, options?: string[]): FieldSpec => ({ name, type, wide, options });
-const groups: Record<string, Group[]> = {
+const buildGroups = (leadOptions: string[]): Record<string, Group[]> => ({
   dossiers: [
     { title: 'Contact', fields: [f('Nom complet'),f('Téléphone','tel'),f('Email','email'),f('Adresse','text',true),f('Ville'),f('Code postal')] },
     { title: 'Projet de rénovation', fields: [f('Service','text',false,services),f('Budget estimé','number'),f('Description','textarea',true)] },
@@ -35,13 +35,13 @@ const groups: Record<string, Group[]> = {
     { title: 'Photos du chantier', fields: [f('Photos avant','file'),f('Photos pendant','file'),f('Photos après','file')] },
     { title: 'Référencement & publication', fields: [f('Titre SEO'),f('Statut','text',false,['Brouillon','Publié']),f('Meta description','textarea',true)] },
   ],
-  planning: [{ title: 'Rendez-vous', fields: [f('Type','text',false,['Visite technique','Appel de suivi','Présentation de devis']),f('Date','date'),f('Heure','time'),f('Durée','text',false,['30 min','1 heure','1 h 30','2 heures']),f('Adresse','text',true),f('Commercial','text',false,['Laurent Moreau','Sophie Martin','Thomas Leroy']),f('Commentaire','textarea',true)] }],
+  planning: [{ title: 'Rendez-vous', fields: [f('Prospect','text',true,leadOptions),f('Type','text',false,['Visite technique','Appel de suivi','Présentation de devis']),f('Date','date'),f('Heure','time'),f('Durée','text',false,['30 min','1 heure','1 h 30','2 heures']),f('Adresse','text',true),f('Commercial','text',false,['Laurent Moreau','Sophie Martin','Thomas Leroy']),f('Commentaire','textarea',true)] }],
   devis: [
     { title: 'Informations du devis', fields: [f('Référence'),f('Date','date'),f('Prospect'),f('Service','text',false,services),f('Montant HT','number'),f('Montant TTC','number'),f('PDF','file',true)] },
     { title: 'Suivi commercial', fields: [f('Commentaire','textarea',true),f('Statut','text',false,['À préparer','Envoyé','À relancer','Accepté','Refusé'])] },
   ],
-  vente: [{ title: 'Vente conclue', fields: [f('Date','date'),f('Montant','number'),f('Service','text',false,services),f('Devis concerné'),f('Commentaire','textarea',true)] }],
-  perte: [{ title: 'Motif de perte', fields: [f('Motif','text',false,['Trop cher','Concurrent','Projet abandonné','Projet reporté','Hors cible','Raison technique','Raison administrative','Impossible à joindre','Autre']),f('Commentaire','textarea',true)] }],
+  vente: [{ title: 'Vente conclue', fields: [f('Prospect','text',true,leadOptions),f('Date','date'),f('Montant','number'),f('Service','text',false,services),f('Devis concerné'),f('Commentaire','textarea',true)] }],
+  perte: [{ title: 'Motif de perte', fields: [f('Prospect','text',true,leadOptions),f('Concurrent'),f('Motif','text',false,['Trop cher','Concurrent','Projet abandonné','Projet reporté','Hors cible','Raison technique','Raison administrative','Impossible à joindre','Autre']),f('Commentaire','textarea',true)] }],
 };
 const labels: Record<string,string> = { articles:'Article',services:'Service',realisations:'Réalisation',planning:'Rendez-vous',devis:'Devis',vente:'Vente',perte:'Perte' };
 const parent: Record<string,View> = { articles:'articles',services:'services',realisations:'realisations',planning:'planning',devis:'devis',vente:'devis',perte:'devis' };
