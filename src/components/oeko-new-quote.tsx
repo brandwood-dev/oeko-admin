@@ -60,7 +60,12 @@ export function OekoNewQuote() {
   const upd = (id: number, patch: Partial<Line>) => setLines(p => p.map(l => l.id === id ? { ...l, ...patch } : l));
   const addPack = (trade: string) => { const pack = catalog.find(c => c.trade === trade); if (pack) setLines(p => [...p, ...pack.items.map((l, i) => ({ ...l, id: Date.now() + i }))]); };
   const save = (status: string) => {
-    addEntry({ section: 'devis', title: ref, detail: `${lead?.name ?? ''} · ${lines.length} ouvrages · ${eur(t.ht)} HT`, status, date: new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date()) });
+    const date = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date());
+    if (lead) {
+      addQuote({ ref, leadId: lead.id, name: lead.name, service: lead.service, amount: eur(t.ht), total: eur(t.ttc), date, status, aid: eur(t.mpr + t.cee), rest: eur(t.rest) });
+      updateLead(lead.id, { status: status === 'Envoyé' ? 'Devis envoyé' : 'Devis à faire', next: status === 'Envoyé' ? 'Relancer le devis' : 'Finaliser le devis' }, 'A mis à jour un dossier');
+    }
+    addEntry({ section: 'devis', title: ref, detail: `${lead?.name ?? ''} · ${lines.length} ouvrages · ${eur(t.ht)} HT`, status, date });
     navigate({ to: '/devis' });
   };
 
