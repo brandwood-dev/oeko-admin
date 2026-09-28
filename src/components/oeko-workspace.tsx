@@ -44,7 +44,7 @@ export function OekoWorkspace({view,subpage}:{view:View;subpage?:{section:string
  const globalLeads=gq?leadList.filter(l=>`${l.name} ${l.phone} ${l.email} ${l.address} ${l.city} ${l.zip} ${l.id}`.toLowerCase().includes(gq)).slice(0,6):[];
  const globalQuotes=gq?quoteList.filter(q=>`${q.ref} ${q.name} ${q.service}`.toLowerCase().includes(gq)).slice(0,4):[];
  const journalRows=log.filter(r=>`${r.action} ${r.target} ${r.user}`.toLowerCase().includes(journalQ.toLowerCase())&&(journalUser==='Tous les utilisateurs'||r.user===journalUser)&&(journalAction==='Toutes les actions'||r.action===journalAction));
- const sales=leadList.filter(l=>l.status==='Vente');
+ const sales=leadList.filter(l=>['Vente','Signé'].includes(l.status));
  const losses=leadList.filter(l=>['Perdu','Abandon','Inexploitable'].includes(l.status));
  const filtered=leadList.filter(l=>`${l.name} ${l.city} ${l.service} ${l.id}`.toLowerCase().includes(search.toLowerCase())&&(filter==='Tous les statuts'||l.status===filter)&&(sourceFilter==='Toutes les sources'||l.source===sourceFilter)&&(serviceFilter==='Tous les services'||l.service===serviceFilter));
  const openSubpage=(section:string,item:string)=>navigate({to:`/${section}/${encodeURIComponent(item)}`});
