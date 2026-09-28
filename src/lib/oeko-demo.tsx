@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import { leads, quotes, rdvSeed, docSeed, logSeed, type DemoDoc, type Lead, type LeadEvent, type LogEntry, type Quote, type Rdv } from './oeko-data';
+import { articleSeed, type Article } from './oeko-articles';
 
 type DemoEntry = { section: string; title: string; detail: string; status: string; date: string };
 
@@ -38,6 +39,7 @@ type DemoContextValue = {
   events: LeadEvent[]; addEvent: (event: Omit<LeadEvent, 'id' | 'when'>) => void;
   log: LogEntry[]; addLog: (action: string, target: string) => void;
   updateLead: (id: string, patch: Partial<Lead>, logAction?: string) => void;
+  articleList: Article[]; saveArticle: (article: Article, isNew: boolean) => void;
 };
 const DemoContext = createContext<DemoContextValue | null>(null);
 
@@ -51,6 +53,7 @@ export function OekoDemoProvider({ children }: { children: ReactNode }) {
   const [docs, setDocs] = useState<DemoDoc[]>(docSeed);
   const [events, setEvents] = useState<LeadEvent[]>([]);
   const [log, setLog] = useState<LogEntry[]>(logSeed);
+  const [articleList, setArticleList] = useState<Article[]>(articleSeed);
 
   const addLog = (action: string, target: string) => setLog(p => [{ user: 'Alexandre Martin', action, when: now(), target }, ...p]);
   const addEvent: DemoContextValue['addEvent'] = e => setEvents(p => [{ ...e, id: uid('EV'), when: now() }, ...p]);
@@ -84,7 +87,12 @@ export function OekoDemoProvider({ children }: { children: ReactNode }) {
     addLog('A ajouté un document', doc.name);
   };
 
-  return <DemoContext.Provider value={{ leadList, setLeadList, notes, addNote, entries, addEntry, desktopMenuOpen, setDesktopMenuOpen, rdvList, addRdv, updateRdv, quoteList, addQuote, updateQuote, docs, addDoc, events, addEvent, log, addLog, updateLead }}>{children}</DemoContext.Provider>;
+  const saveArticle: DemoContextValue['saveArticle'] = (a, isNew) => {
+    setArticleList(p => isNew ? [a, ...p] : p.map(x => x.id === a.id ? a : x));
+    addLog(isNew ? (a.status === 'Publié' ? 'A publié un article' : 'A créé un brouillon d’article') : 'A modifié un article', a.title);
+  };
+
+  return <DemoContext.Provider value={{ leadList, setLeadList, notes, addNote, entries, addEntry, desktopMenuOpen, setDesktopMenuOpen, rdvList, addRdv, updateRdv, quoteList, addQuote, updateQuote, docs, addDoc, events, addEvent, log, addLog, updateLead, articleList, saveArticle }}>{children}</DemoContext.Provider>;
 }
 
 export function useOekoDemo() {

@@ -34,3 +34,6 @@
 - [x] Vente / perte : statut, montant, motif, concurrent, timeline et journal
 - [x] Documents rattachés au dossier, données de qualification et tracking affichées
 - [x] Paramètres : ajout d’éléments ; erreurs d’import : résolution journalisée
+
+## Studio de rédaction articles
+- [x] Création et modification d’articles, plan H2, FAQ, scores SEO/GEO, aperçu Google et page
