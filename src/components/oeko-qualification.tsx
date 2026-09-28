@@ -6,7 +6,7 @@ import { useOekoDemo } from '@/lib/oeko-demo';
 import type { Lead } from '@/lib/oeko-data';
 
 type Queue = 'À traiter' | 'À rappeler' | 'Qualifiés' | 'Nurserie' | 'Écartés';
-const queueOf = (s: string): Queue => ['Nouveau', 'À qualifier'].includes(s) ? 'À traiter' : s === 'À rappeler' ? 'À rappeler' : s === 'Nurserie' ? 'Nurserie' : ['Inexploitable', 'Abandon', 'Archivé'].includes(s) ? 'Écartés' : 'Qualifiés';
+const queueOf = (s: string): Queue => ['Nouveau', 'À qualifier'].includes(s) ? 'À traiter' : s === 'À rappeler' ? 'À rappeler' : s === 'Nurserie' ? 'Nurserie' : ['Inexploitable', 'Abandon', 'Archivé', 'Perdu'].includes(s) ? 'Écartés' : 'Qualifiés';
 const idf = ['75', '77', '78', '91', '92', '93', '94', '95'];
 const waits: Record<string, number> = { 'OE-24091': 12, 'OE-24090': 47, 'OE-24087': 196, 'OE-24089': 1080, 'OE-24088': 1260, 'OE-24086': 2880 };
 const fmtWait = (m: number) => m < 60 ? `${m} min` : m < 1440 ? `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}` : `${Math.floor(m / 1440)} j`;
@@ -22,7 +22,7 @@ function score(l: Lead) {
 }
 
 export function OekoQualification({ openLead }: { openLead: (l: Lead) => void }) {
-  const { leadList, setLeadList } = useOekoDemo();
+  const { leadList, updateLead, addEvent } = useOekoDemo();
   const [queue, setQueue] = useState<Queue>('À traiter');
   const [q, setQ] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -37,7 +37,8 @@ export function OekoQualification({ openLead }: { openLead: (l: Lead) => void })
   const notify = (m: string) => { setToast(m); window.setTimeout(() => setToast(''), 3000); };
   const setStatus = (status: string, message: string) => {
     if (!selected) return;
-    setLeadList(prev => prev.map(l => l.id === selected.id ? { ...l, status } : l));
+    updateLead(selected.id, { status, archived: status === 'Archivé' }, 'A traité un lead en qualification');
+    addEvent({ leadId: selected.id, kind: 'Qualification', title: message, body: `Statut : ${status}`, who: 'Alexandre Martin' });
     setSelectedId(null); notify(message);
   };
 
