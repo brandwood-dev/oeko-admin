@@ -16,3 +16,6 @@
 - Keep the commercial dashboard in its own presentation component and reuse the department-map component unchanged, so sales refinements do not alter its geographic visualization.
 
 - Toutes les données de démonstration (dossiers, rendez-vous, devis, documents, journal) vivent dans OekoDemoProvider : chaque écran lit et écrit ce même état pour rester cohérent sans backend.
+
+- Les tâches (prochaines actions), notifications, grille d'éligibilité et le prospect présélectionné (prefillLeadId) vivent aussi dans OekoDemoProvider, pour que qualification, fiche dossier, « Ma journée » et les formulaires de devis/vente/perte restent synchronisés sans backend.
+- L'édition d'un dossier et le bloc « Prochaines actions » sont mutualisés dans src/components/oeko-lead-edit.tsx, réutilisé par la fiche CRM et « Ma journée ».
