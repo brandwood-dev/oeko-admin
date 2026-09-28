@@ -85,8 +85,8 @@ export function OekoNewQuote() {
           <div className="ml-auto flex flex-wrap gap-1.5">{catalog.map(c => <button key={c.trade} type="button" onClick={() => addPack(c.trade)} className="rounded-full border border-border px-3 py-1 text-[11px] font-semibold hover:border-primary hover:text-primary">+ {c.trade.split(' (')[0]}</button>)}</div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-sm">
-            <thead><tr className="border-b border-border text-left text-[11px] uppercase text-muted-foreground"><th className="py-2 font-semibold">Désignation</th><th className="w-20 font-semibold">Qté</th><th className="w-20 font-semibold">Unité</th><th className="w-28 font-semibold">PU HT</th><th className="w-20 font-semibold">TVA</th><th className="w-28 text-right font-semibold">Total HT</th><th className="w-8"/></tr></thead>
+          <table className="w-full min-w-[720px] table-fixed text-sm">
+            <thead><tr className="border-b border-border text-left text-[11px] uppercase text-muted-foreground"><th className="w-auto py-2 font-semibold">Désignation</th><th className="w-16 font-semibold">Qté</th><th className="w-16 font-semibold">Unité</th><th className="w-24 font-semibold">PU HT</th><th className="w-20 font-semibold">TVA</th><th className="w-24 text-right font-semibold">Total HT</th><th className="w-8"/></tr></thead>
             <tbody>{lines.map(l => <tr key={l.id} className="border-b border-border/60">
               <td className="py-2 pr-2"><Input value={l.label} onChange={e => upd(l.id, { label: e.target.value })} className="h-9"/></td>
               <td className="pr-2"><Input type="number" value={l.qty} onChange={e => upd(l.id, { qty: Number(e.target.value) })} className="h-9"/></td>
