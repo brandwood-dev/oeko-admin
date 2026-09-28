@@ -57,9 +57,18 @@ export function OekoNewLead() {
   ] as const;
   const score = Math.round(checks.filter(c => c[1]).length / checks.length * 100);
   const valid = !!(v.last && v.phone);
+  const dupBlocked = !!dup && dupOk !== dup.id;
 
-  const create = (plan: boolean) => {
-    if (!valid) return;
+  // Rattache la nouvelle demande au dossier existant, sans créer de doublon.
+  const attachToExisting = () => {
+    if (!dup) return;
+    addEvent({ leadId: dup.id, kind: 'Demande', title: 'Nouvelle demande rattachée au contact existant', body: `${picked.join(' + ') || 'Travaux à définir'} · ${v.description || 'Demande saisie depuis le back-office'}`, who: 'Alexandre Martin' });
+    addLog('A rattaché une demande à un dossier existant', `${dup.name} · ${dup.id}`);
+    navigate({ to: `/dossiers/${dup.id}` });
+  };
+
+  const create = (plan: boolean, newProjectOf?: string) => {
+    if (!valid || (dupBlocked && !newProjectOf)) return;
     const name = `${v.first} ${v.last}`.trim();
     const id = `OE-${Date.now()}`;
     const lead: Lead = { id, name, initials: name.split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase(), city: v.city, zip: v.zip, phone: v.phone, email: v.email, service: picked.join(' + ') || 'À définir', source: v.source, status: 'Nouveau', date: 'Aujourd’hui', owner: v.commercial, amount: `${budget.toLocaleString('fr-FR')} €`, next: plan ? 'Visite technique à planifier' : 'Aucune action', address: v.address, description: v.description || `${v.housing} · ${v.year} · ${v.surface || '?'} m² · ${v.heating} · ${v.owner} · Revenus ${v.income} · ${v.urgency}.`,
