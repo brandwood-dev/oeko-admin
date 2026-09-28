@@ -60,6 +60,11 @@ export function OekoDemoProvider({ children }: { children: ReactNode }) {
   const [events, setEvents] = useState<LeadEvent[]>([]);
   const [log, setLog] = useState<LogEntry[]>(logSeed);
   const [articleList, setArticleList] = useState<Article[]>(articleSeed);
+  const [taskList, setTaskList] = useState<Task[]>(taskSeed);
+  const [checkGrid, setCheckGrid] = useState<Record<string, string[]>>({ 'OE-24091': ['Propriétaire occupant', 'Maison individuelle'], 'OE-24086': ['Propriétaire occupant', 'Maison individuelle', 'Revenus renseignés (MaPrimeRénov’)', 'Budget validé'] });
+  const [notifs, setNotifs] = useState<Notif[]>(notifSeed);
+  const [prefillLeadId, setPrefillLeadId] = useState('');
+
 
   const addLog = (action: string, target: string) => setLog(p => [{ user: 'Alexandre Martin', action, when: now(), target }, ...p]);
   const addEvent: DemoContextValue['addEvent'] = e => setEvents(p => [{ ...e, id: uid('EV'), when: now() }, ...p]);
