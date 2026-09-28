@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
-import { AlarmClock, ArrowRight, Ban, CalendarClock, Check, Flame, Mail, MapPin, Phone, Search, ShieldCheck, Timer, Zap } from 'lucide-react';
+import { AlarmClock, ArrowRight, Ban, CalendarClock, Check, Flame, Mail, MapPin, Phone, RotateCcw, Search, ShieldCheck, Timer, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useOekoDemo } from '@/lib/oeko-demo';
-import type { Lead } from '@/lib/oeko-data';
+import { LOSS_REASONS, OWNERS, SOURCES, STATUSES, TASK_TYPES, services, type Lead } from '@/lib/oeko-data';
 
 type Queue = 'À traiter' | 'À rappeler' | 'Qualifiés' | 'Nurserie' | 'Écartés';
 const queueOf = (s: string): Queue => ['Nouveau', 'À qualifier'].includes(s) ? 'À traiter' : s === 'À rappeler' ? 'À rappeler' : s === 'Nurserie' ? 'Nurserie' : ['Inexploitable', 'Abandon', 'Archivé', 'Perdu'].includes(s) ? 'Écartés' : 'Qualifiés';
@@ -12,6 +13,12 @@ const waits: Record<string, number> = { 'OE-24091': 12, 'OE-24090': 47, 'OE-2408
 const fmtWait = (m: number) => m < 60 ? `${m} min` : m < 1440 ? `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}` : `${Math.floor(m / 1440)} j`;
 const checks = ['Propriétaire occupant', 'Maison individuelle', 'Revenus renseignés (MaPrimeRénov’)', 'Projet sous 3 mois', 'Budget validé'];
 const sourceColor: Record<string, string> = { 'Google Ads': 'bg-primary/10 text-primary', SEO: 'bg-lime/60 text-foreground', Meta: 'bg-muted text-foreground', Appels: 'bg-foreground text-background', Email: 'bg-muted text-foreground' };
+const URGENCY = ['Immédiate', 'Sous 3 mois', 'Sous 6 mois', 'Plus de 6 mois', 'Simple information'];
+const PRIORITY = ['Haute', 'Normale', 'Basse'];
+const POTENTIAL = ['Élevé', 'Moyen', 'Faible'];
+const DATES = ['Toutes les dates', 'Aujourd’hui', 'Hier', 'Cette semaine'];
+const sel = 'h-9 w-full rounded-md border border-border bg-background px-2 text-xs';
+const matchDate = (l: Lead, f: string) => f === DATES[0] || (f === 'Aujourd’hui' ? l.date.startsWith('Aujourd') : f === 'Hier' ? l.date.startsWith('Hier') : l.date.startsWith('Aujourd') || l.date.startsWith('Hier') || l.date.includes('sept'));
 
 function score(l: Lead) {
   const amount = Number(l.amount.replace(/[^0-9]/g, '')) || 0;
@@ -22,24 +29,59 @@ function score(l: Lead) {
 }
 
 export function OekoQualification({ openLead }: { openLead: (l: Lead) => void }) {
-  const { leadList, updateLead, addEvent } = useOekoDemo();
+  const { leadList, updateLead, addEvent, checkGrid, toggleCheck, addTask } = useOekoDemo();
   const [queue, setQueue] = useState<Queue>('À traiter');
   const [q, setQ] = useState('');
+  const [dateF, setDateF] = useState(DATES[0]!);
+  const [sourceF, setSourceF] = useState('Toutes les sources');
+  const [serviceF, setServiceF] = useState('Tous les services');
+  const [statusF, setStatusF] = useState('Tous les statuts');
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [ticked, setTicked] = useState<Record<string, string[]>>({});
   const [toast, setToast] = useState('');
+  const [taskType, setTaskType] = useState(TASK_TYPES[0]!);
+  const [taskDate, setTaskDate] = useState('');
+  const [taskTime, setTaskTime] = useState('');
+  const [taskNote, setTaskNote] = useState('');
+  const [reasonFor, setReasonFor] = useState<string | null>(null);
+  const [reason, setReason] = useState(LOSS_REASONS[0]!);
 
   const counts = useMemo(() => leadList.reduce<Record<string, number>>((acc, l) => { const k = queueOf(l.status); acc[k] = (acc[k] ?? 0) + 1; return acc; }, {}), [leadList]);
-  const list = leadList.filter(l => queueOf(l.status) === queue && `${l.name} ${l.city} ${l.phone} ${l.zip}`.toLowerCase().includes(q.toLowerCase()))
+  const activeFilters = [dateF !== DATES[0] && dateF, sourceF !== 'Toutes les sources' && sourceF, serviceF !== 'Tous les services' && serviceF, statusF !== 'Tous les statuts' && statusF].filter(Boolean) as string[];
+  const resetFilters = () => { setDateF(DATES[0]!); setSourceF('Toutes les sources'); setServiceF('Tous les services'); setStatusF('Tous les statuts'); setQ(''); };
+  const list = leadList
+    .filter(l => queueOf(l.status) === queue
+      && `${l.name} ${l.city} ${l.phone} ${l.zip} ${l.email}`.toLowerCase().includes(q.toLowerCase())
+      && matchDate(l, dateF)
+      && (sourceF === 'Toutes les sources' || l.source === sourceF)
+      && (serviceF === 'Tous les services' || l.service === serviceF)
+      && (statusF === 'Tous les statuts' || l.status === statusF))
     .sort((a, b) => score(b) - score(a));
   const selected = leadList.find(l => l.id === selectedId) ?? list[0];
-  const tick = selected ? ticked[selected.id] ?? [] : [];
+  const tick = selected ? checkGrid[selected.id] ?? [] : [];
   const notify = (m: string) => { setToast(m); window.setTimeout(() => setToast(''), 3000); };
   const setStatus = (status: string, message: string) => {
     if (!selected) return;
     updateLead(selected.id, { status, archived: status === 'Archivé' }, 'A traité un lead en qualification');
     addEvent({ leadId: selected.id, kind: 'Qualification', title: message, body: `Statut : ${status}`, who: 'Alexandre Martin' });
-    setSelectedId(null); notify(message);
+    notify(message);
+  };
+  const planTask = () => {
+    if (!selected) return false;
+    if (!taskDate || !taskTime) { notify('Définissez d’abord la prochaine action (date et heure).'); return false; }
+    addTask({ leadId: selected.id, leadName: selected.name, type: taskType, date: taskDate, time: taskTime, comment: taskNote, owner: selected.owner });
+    updateLead(selected.id, { next: `${taskType} · ${taskDate} ${taskTime}` });
+    setTaskDate(''); setTaskTime(''); setTaskNote('');
+    return true;
+  };
+  const qualify = () => { if (planTask()) setStatus('Qualifié', `${selected!.name} qualifié · transmis à ${selected!.owner}`); };
+  const recall = () => { if (planTask()) setStatus('À rappeler', `Rappel programmé pour ${selected!.name}`); };
+  const discard = (status: string) => { setReasonFor(status); setReason(LOSS_REASONS[0]!); };
+  const confirmDiscard = () => {
+    if (!selected || !reasonFor) return;
+    updateLead(selected.id, { status: reasonFor, lossReason: reason, next: 'Aucune action' }, 'A écarté un lead');
+    addEvent({ leadId: selected.id, kind: 'Qualification', title: `${reasonFor} · ${reason}`, body: taskNote, who: 'Alexandre Martin' });
+    notify(`${selected.name} · ${reasonFor} (${reason}).`);
+    setReasonFor(null);
   };
 
   const kpis = [
@@ -62,10 +104,20 @@ export function OekoQualification({ openLead }: { openLead: (l: Lead) => void })
       <div className="relative sm:w-64"><Search size={15} className="absolute left-3 top-2.5 text-muted-foreground" /><Input value={q} onChange={e => setQ(e.target.value)} placeholder="Nom, ville, téléphone…" className="pl-9" /></div>
     </div>
 
+    <div className="rounded-lg border border-border bg-card p-3">
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        <select aria-label="Filtrer par date" value={dateF} onChange={e => setDateF(e.target.value)} className={sel}>{DATES.map(o => <option key={o}>{o}</option>)}</select>
+        <select aria-label="Filtrer par source" value={sourceF} onChange={e => setSourceF(e.target.value)} className={sel}>{['Toutes les sources', ...SOURCES].map(o => <option key={o}>{o}</option>)}</select>
+        <select aria-label="Filtrer par service" value={serviceF} onChange={e => setServiceF(e.target.value)} className={sel}>{['Tous les services', ...new Set([...services, ...leadList.map(l => l.service)])].map(o => <option key={o}>{o}</option>)}</select>
+        <select aria-label="Filtrer par statut" value={statusF} onChange={e => setStatusF(e.target.value)} className={sel}>{['Tous les statuts', ...STATUSES].map(o => <option key={o}>{o}</option>)}</select>
+      </div>
+      {!!activeFilters.length && <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]"><span className="text-muted-foreground">Filtres actifs :</span>{activeFilters.map(f => <span key={f} className="rounded-full bg-secondary px-2 py-0.5 font-semibold">{f}</span>)}<button onClick={resetFilters} className="ml-auto inline-flex items-center gap-1 font-semibold text-primary"><RotateCcw size={12} /> Réinitialiser</button></div>}
+    </div>
+
     <div className="grid gap-5 lg:grid-cols-[1.1fr_1fr]">
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         <div className="flex items-center justify-between border-b border-border px-4 py-3 text-xs"><span className="font-bold">File {queue.toLowerCase()}</span><span className="text-muted-foreground">Triée par score · {list.length} leads</span></div>
-        {list.length === 0 && <p className="p-8 text-center text-sm text-muted-foreground">Aucun lead dans cette file.</p>}
+        {list.length === 0 && <p className="p-8 text-center text-sm text-muted-foreground">Aucun lead ne correspond à ces filtres.</p>}
         <ul className="divide-y divide-border">{list.map(l => {
           const w = waits[l.id] ?? 30; const late = queue === 'À traiter' && w > 30; const s = score(l);
           return <li key={l.id}><button onClick={() => setSelectedId(l.id)} className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/60 ${selected?.id === l.id ? 'bg-primary/5 ring-1 ring-inset ring-primary/30' : ''}`}>
@@ -89,19 +141,45 @@ export function OekoQualification({ openLead }: { openLead: (l: Lead) => void })
           <div className="mt-4 flex flex-wrap gap-2"><Button size="sm" asChild><a href={`tel:${selected.phone.replaceAll(' ', '')}`}><Phone size={14} />{selected.phone}</a></Button><Button size="sm" variant="outline" asChild><a href={`mailto:${selected.email}`}><Mail size={14} />Email</a></Button></div>
         </div>
         <div className="space-y-5 p-5">
-          <div><p className="text-xs font-bold">Demande</p><p className="mt-1 text-sm text-muted-foreground">« {selected.description} »</p>
-            <div className="mt-2 flex flex-wrap gap-2 text-[11px]"><span className="rounded bg-muted px-2 py-1">{selected.service}</span><span className="rounded bg-muted px-2 py-1">Budget {selected.amount}</span><span className="rounded bg-muted px-2 py-1">Reçu {selected.date}</span></div></div>
+          <div><p className="text-xs font-bold">Demande</p><p className="mt-1 text-sm text-muted-foreground">« {selected.description} »</p></div>
+
+          <div><p className="mb-2 text-xs font-bold">Champs de qualification</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <label className="block"><span className="mb-1 block text-[11px] text-muted-foreground">Budget estimé</span><Input value={selected.amount} onChange={e => updateLead(selected.id, { amount: e.target.value })} className="h-9" /></label>
+              <label className="block"><span className="mb-1 block text-[11px] text-muted-foreground">Urgence</span><select value={selected.urgency ?? ''} onChange={e => updateLead(selected.id, { urgency: e.target.value })} className={sel}>{URGENCY.map(o => <option key={o}>{o}</option>)}</select></label>
+              <label className="block"><span className="mb-1 block text-[11px] text-muted-foreground">Priorité</span><select value={selected.priority ?? ''} onChange={e => updateLead(selected.id, { priority: e.target.value })} className={sel}>{PRIORITY.map(o => <option key={o}>{o}</option>)}</select></label>
+              <label className="block"><span className="mb-1 block text-[11px] text-muted-foreground">Potentiel</span><select value={selected.potential ?? ''} onChange={e => updateLead(selected.id, { potential: e.target.value })} className={sel}>{POTENTIAL.map(o => <option key={o}>{o}</option>)}</select></label>
+              <label className="block sm:col-span-2"><span className="mb-1 block text-[11px] text-muted-foreground">Commercial attribué</span><select value={selected.owner} onChange={e => { updateLead(selected.id, { owner: e.target.value }, 'A attribué un lead'); notify(`Lead attribué à ${e.target.value}.`); }} className={sel}>{[selected.owner, ...OWNERS, 'Non attribué'].filter((v, i, a) => a.indexOf(v) === i).map(o => <option key={o}>{o}</option>)}</select></label>
+            </div>
+          </div>
+
           <div><div className="flex items-center justify-between"><p className="text-xs font-bold">Grille d’éligibilité</p><span className="text-[11px] font-semibold text-primary">{tick.length}/{checks.length}</span></div>
             <div className="mt-2 h-1.5 rounded bg-muted"><div className="h-full rounded bg-primary transition-all" style={{ width: `${(tick.length / checks.length) * 100}%` }} /></div>
-            <ul className="mt-3 space-y-1.5">{checks.map(c => { const on = tick.includes(c); return <li key={c}><button onClick={() => setTicked(p => ({ ...p, [selected.id]: on ? tick.filter(x => x !== c) : [...tick, c] }))} className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted">
+            <ul className="mt-3 space-y-1.5">{checks.map(c => { const on = tick.includes(c); return <li key={c}><button onClick={() => toggleCheck(selected.id, c)} className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted">
               <span className={`flex size-4 items-center justify-center rounded border ${on ? 'border-primary bg-primary text-primary-foreground' : 'border-input'}`}>{on && <Check size={11} />}</span>{c}</button></li>; })}</ul></div>
+
+          <div className="rounded-md border border-dashed border-border p-3">
+            <p className="text-xs font-bold">Prochaine action <span className="font-normal text-destructive">(obligatoire)</span></p>
+            <select aria-label="Type d’action" value={taskType} onChange={e => setTaskType(e.target.value)} className={`${sel} mt-2`}>{TASK_TYPES.map(o => <option key={o}>{o}</option>)}</select>
+            <div className="mt-2 grid grid-cols-2 gap-2"><Input aria-label="Date de l’action" type="date" value={taskDate} onChange={e => setTaskDate(e.target.value)} className="h-9" /><Input aria-label="Heure de l’action" type="time" value={taskTime} onChange={e => setTaskTime(e.target.value)} className="h-9" /></div>
+            <Textarea aria-label="Commentaire" value={taskNote} onChange={e => setTaskNote(e.target.value)} placeholder="Commentaire d’appel…" className="mt-2 min-h-16" />
+            <p className="mt-1 text-[11px] text-muted-foreground">Action actuelle : {selected.next}</p>
+          </div>
+
           <div className="grid gap-2 sm:grid-cols-2">
-            <Button onClick={() => setStatus('Qualifié', `${selected.name} qualifié · transmis à ${selected.owner}`)}><ShieldCheck size={15} />Qualifier</Button>
-            <Button variant="outline" onClick={() => setStatus('À rappeler', `Rappel programmé pour ${selected.name}`)}><AlarmClock size={15} />Fixer un rappel</Button>
+            <Button onClick={qualify}><ShieldCheck size={15} />Qualifier</Button>
+            <Button variant="outline" onClick={recall}><AlarmClock size={15} />Fixer un rappel</Button>
             <Button variant="outline" onClick={() => setStatus('Nurserie', `${selected.name} placé en nurserie`)}><CalendarClock size={15} />Nurserie</Button>
-            <Button variant="outline" className="text-destructive" onClick={() => setStatus('Inexploitable', `${selected.name} écarté`)}><Ban size={15} />Hors cible</Button>
+            <Button variant="outline" className="text-destructive" onClick={() => discard('Inexploitable')}><Ban size={15} />Inexploitable</Button>
+            <Button variant="ghost" className="text-destructive sm:col-span-2" onClick={() => discard('Abandon')}>Déclarer un abandon</Button>
           </div>
           <button onClick={() => openLead(selected)} className="flex items-center gap-1 text-xs font-semibold text-primary">Ouvrir la fiche complète <ArrowRight size={13} /></button>
+
+          {reasonFor && <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3">
+            <p className="text-xs font-bold">Motif d’{reasonFor === 'Abandon' ? 'abandon' : 'inexploitation'}</p>
+            <select aria-label="Motif" value={reason} onChange={e => setReason(e.target.value)} className={`${sel} mt-2`}>{LOSS_REASONS.map(o => <option key={o}>{o}</option>)}</select>
+            <div className="mt-2 flex gap-2"><Button size="sm" onClick={confirmDiscard}>Confirmer</Button><Button size="sm" variant="outline" onClick={() => setReasonFor(null)}>Annuler</Button></div>
+          </div>}
         </div>
       </div> : <div className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">Sélectionnez un lead.</div>}
     </div>

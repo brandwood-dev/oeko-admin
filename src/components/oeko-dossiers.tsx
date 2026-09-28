@@ -6,11 +6,15 @@ import { useOekoDemo } from '@/lib/oeko-demo';
 import type { Lead } from '@/lib/oeko-data';
 
 const stages = [
-  { key: 'Qualifié', label: 'Qualifié', prob: 20, alias: ['Commercial attribué'] },
-  { key: 'RDV planifié', label: 'Visite technique', prob: 40, alias: ['Rendez-vous', 'Devis à faire'] },
-  { key: 'Devis envoyé', label: 'Devis présenté', prob: 60, alias: ['À relancer'] },
-  { key: 'Négociation', label: 'Négociation', prob: 80, alias: [] as string[] },
-  { key: 'Vente', label: 'Signé', prob: 100, alias: ['Signé'] },
+  { key: 'Qualifié', label: 'Qualifié', prob: 15, alias: [] as string[] },
+  { key: 'Commercial attribué', label: 'Commercial attribué', prob: 25, alias: [] as string[] },
+  { key: 'À rappeler', label: 'À rappeler', prob: 20, alias: [] as string[] },
+  { key: 'RDV planifié', label: 'RDV planifié', prob: 40, alias: ['Rendez-vous'] },
+  { key: 'Devis à faire', label: 'Devis à faire', prob: 50, alias: [] as string[] },
+  { key: 'Devis envoyé', label: 'Devis envoyé', prob: 65, alias: [] as string[] },
+  { key: 'À relancer', label: 'À relancer', prob: 75, alias: ['Négociation'] },
+  { key: 'Vente', label: 'Vente', prob: 100, alias: ['Signé'] },
+  { key: 'Perdu', label: 'Perdu', prob: 0, alias: [] as string[] },
 ] as const;
 const aides: Record<string, string> = { 'OE-24091': 'MaPrimeRénov’ en cours', 'OE-24090': 'CEE validé', 'OE-24089': 'Non éligible', 'OE-24088': 'CEE en cours', 'OE-24087': 'À instruire', 'OE-24086': 'MaPrimeRénov’ validé' };
 const stageOf = (s: string) => stages.find(x => x.key === s || (x.alias as readonly string[]).includes(s))?.key ?? null;
@@ -26,7 +30,7 @@ export function OekoDossiers({ openLead, newDossier }: { openLead: (l: Lead) => 
 
   const portfolio = leadList.filter(l => stageOf(l.status) && `${l.name} ${l.city} ${l.service}`.toLowerCase().includes(q.toLowerCase()) && (owner === 'Tous' || l.owner === owner));
   const kpi = useMemo(() => {
-    const open = portfolio.filter(l => stageOf(l.status) !== 'Vente');
+    const open = portfolio.filter(l => !['Vente', 'Perdu'].includes(stageOf(l.status) ?? ''));
     const weighted = open.reduce((s, l) => s + num(l.amount) * (stages.find(x => x.key === stageOf(l.status))?.prob ?? 20) / 100, 0);
     return { total: open.reduce((s, l) => s + num(l.amount), 0), weighted: Math.round(weighted), signed: portfolio.filter(l => stageOf(l.status) === 'Vente').reduce((s, l) => s + num(l.amount), 0), avg: Math.round(portfolio.reduce((s, l) => s + num(l.amount), 0) / (portfolio.length || 1)) };
   }, [portfolio]);
@@ -63,7 +67,7 @@ export function OekoDossiers({ openLead, newDossier }: { openLead: (l: Lead) => 
         <div className="mt-2 min-h-24 space-y-2">{col.map(l => <div key={l.id} draggable onDragStart={() => setDragId(l.id)} onClick={() => openLead(l)} className="cursor-pointer rounded-md border border-border bg-card p-3 shadow-sm transition hover:border-primary/40">
           <div className="flex items-start justify-between gap-2"><span className="text-sm font-bold">{l.name}</span><span className="text-xs font-bold text-primary">{l.amount}</span></div>
           <p className="mt-0.5 text-[11px] text-muted-foreground">{l.service} · {l.city} ({l.zip.slice(0, 2)})</p>
-          <span className="mt-2 inline-block rounded bg-lime/50 px-1.5 py-0.5 text-[10px] font-semibold">{aides[l.id] ?? 'Aides à instruire'}</span>
+          <span className="mt-2 inline-block rounded bg-lime/50 px-1.5 py-0.5 text-[10px] font-semibold">{stageOf(l.status) === 'Perdu' ? `Perdu · ${l.lossReason ?? 'motif à préciser'}` : aides[l.id] ?? 'Aides à instruire'}</span>
           <div className="mt-2 flex items-center justify-between text-[10px] text-muted-foreground"><span>{l.next}</span><span className="flex size-6 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">{l.owner.split(' ').map(x => x[0]).join('')}</span></div>
           <select onClick={e => e.stopPropagation()} value={stageOf(l.status) ?? 'Qualifié'} onChange={e => move(l.id, e.target.value)} aria-label="Changer d’étape" className="mt-2 h-7 w-full rounded border border-border bg-background px-2 text-[11px]">{stages.map(x => <option key={x.key} value={x.key}>{x.label}</option>)}</select>
         </div>)}{col.length === 0 && <p className="p-4 text-center text-[11px] text-muted-foreground">Glissez un dossier ici</p>}</div>
@@ -73,6 +77,6 @@ export function OekoDossiers({ openLead, newDossier }: { openLead: (l: Lead) => 
       <tbody className="divide-y divide-border">{portfolio.map(l => { const st = stages.find(x => x.key === stageOf(l.status)) ?? stages[0]; return <tr key={l.id} onClick={() => openLead(l)} className="cursor-pointer hover:bg-muted/50">
         <td className="px-4 py-3"><span className="font-bold">{l.name}</span><span className="block text-muted-foreground">{l.city}</span></td><td className="px-4 py-3">{l.service}</td><td className="px-4 py-3 font-bold">{l.amount}</td><td className="px-4 py-3"><span className="rounded bg-primary/10 px-2 py-1 font-semibold text-primary">{st.label}</span></td><td className="px-4 py-3">{st.prob} %</td><td className="px-4 py-3">{aides[l.id] ?? 'À instruire'}</td><td className="px-4 py-3">{l.owner}</td><td className="px-4 py-3 text-primary"><ArrowRight size={14} /></td></tr>; })}</tbody></table>
       {portfolio.length === 0 && <p className="p-8 text-center text-sm text-muted-foreground">Aucun dossier.</p>}</div>}
-    <p className="text-[11px] text-muted-foreground">Les leads non qualifiés restent dans « Qualification ». Seuls les dossiers qualifiés apparaissent dans le portefeuille.</p>
+    <p className="text-[11px] text-muted-foreground">Pipeline commercial en 9 étapes, identique à la fiche dossier et aux tableaux de bord. Les leads non qualifiés restent dans « Qualification ». Données de démonstration.</p>
   </div>;
 }

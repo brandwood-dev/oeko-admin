@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import { leads, quotes, rdvSeed, docSeed, logSeed, type DemoDoc, type Lead, type LeadEvent, type LogEntry, type Quote, type Rdv } from './oeko-data';
+import { leads, quotes, rdvSeed, docSeed, logSeed, taskSeed, notifSeed, type DemoDoc, type Lead, type LeadEvent, type LogEntry, type Notif, type Quote, type Rdv, type Task } from './oeko-data';
+
 import { articleSeed, type Article } from './oeko-articles';
 
 type DemoEntry = { section: string; title: string; detail: string; status: string; date: string };
@@ -40,7 +41,12 @@ type DemoContextValue = {
   log: LogEntry[]; addLog: (action: string, target: string) => void;
   updateLead: (id: string, patch: Partial<Lead>, logAction?: string) => void;
   articleList: Article[]; saveArticle: (article: Article, isNew: boolean) => void;
+  taskList: Task[]; addTask: (task: Omit<Task, 'id' | 'done'>) => void; updateTask: (id: string, patch: Partial<Task>) => void;
+  checkGrid: Record<string, string[]>; toggleCheck: (leadId: string, item: string) => void;
+  notifs: Notif[]; markNotif: (id: string) => void; markAllNotifs: () => void;
+  prefillLeadId: string; setPrefillLeadId: (id: string) => void;
 };
+
 const DemoContext = createContext<DemoContextValue | null>(null);
 
 export function OekoDemoProvider({ children }: { children: ReactNode }) {
@@ -54,6 +60,11 @@ export function OekoDemoProvider({ children }: { children: ReactNode }) {
   const [events, setEvents] = useState<LeadEvent[]>([]);
   const [log, setLog] = useState<LogEntry[]>(logSeed);
   const [articleList, setArticleList] = useState<Article[]>(articleSeed);
+  const [taskList, setTaskList] = useState<Task[]>(taskSeed);
+  const [checkGrid, setCheckGrid] = useState<Record<string, string[]>>({ 'OE-24091': ['Propriétaire occupant', 'Maison individuelle'], 'OE-24086': ['Propriétaire occupant', 'Maison individuelle', 'Revenus renseignés (MaPrimeRénov’)', 'Budget validé'] });
+  const [notifs, setNotifs] = useState<Notif[]>(notifSeed);
+  const [prefillLeadId, setPrefillLeadId] = useState('');
+
 
   const addLog = (action: string, target: string) => setLog(p => [{ user: 'Alexandre Martin', action, when: now(), target }, ...p]);
   const addEvent: DemoContextValue['addEvent'] = e => setEvents(p => [{ ...e, id: uid('EV'), when: now() }, ...p]);
@@ -92,7 +103,25 @@ export function OekoDemoProvider({ children }: { children: ReactNode }) {
     addLog(isNew ? (a.status === 'Publié' ? 'A publié un article' : 'A créé un brouillon d’article') : 'A modifié un article', a.title);
   };
 
-  return <DemoContext.Provider value={{ leadList, setLeadList, notes, addNote, entries, addEntry, desktopMenuOpen, setDesktopMenuOpen, rdvList, addRdv, updateRdv, quoteList, addQuote, updateQuote, docs, addDoc, events, addEvent, log, addLog, updateLead, articleList, saveArticle }}>{children}</DemoContext.Provider>;
+  const addTask: DemoContextValue['addTask'] = t => {
+    setTaskList(p => [...p, { ...t, id: uid('T'), done: false }]);
+    addEvent({ leadId: t.leadId, kind: 'Action', title: `Action planifiée · ${t.type}`, body: `${t.date} ${t.time} · ${t.comment}`, who: t.owner });
+    addLog('A planifié une prochaine action', `${t.leadName} · ${t.type}`);
+  };
+  const updateTask: DemoContextValue['updateTask'] = (id, patch) => {
+    setTaskList(p => p.map(t => t.id === id ? { ...t, ...patch } : t));
+    const t = taskList.find(x => x.id === id);
+    if (t) addLog(patch.done ? 'A terminé une action' : 'A modifié une action', `${t.leadName} · ${patch.type ?? t.type}`);
+  };
+  const toggleCheck: DemoContextValue['toggleCheck'] = (leadId, item) => setCheckGrid(p => {
+    const cur = p[leadId] ?? [];
+    return { ...p, [leadId]: cur.includes(item) ? cur.filter(x => x !== item) : [...cur, item] };
+  });
+  const markNotif = (id: string) => setNotifs(p => p.map(n => n.id === id ? { ...n, read: true } : n));
+  const markAllNotifs = () => setNotifs(p => p.map(n => ({ ...n, read: true })));
+
+  return <DemoContext.Provider value={{ leadList, setLeadList, notes, addNote, entries, addEntry, desktopMenuOpen, setDesktopMenuOpen, rdvList, addRdv, updateRdv, quoteList, addQuote, updateQuote, docs, addDoc, events, addEvent, log, addLog, updateLead, articleList, saveArticle, taskList, addTask, updateTask, checkGrid, toggleCheck, notifs, markNotif, markAllNotifs, prefillLeadId, setPrefillLeadId }}>{children}</DemoContext.Provider>;
+
 }
 
 export function useOekoDemo() {

@@ -37,3 +37,15 @@
 
 ## Studio de rédaction articles
 - [x] Création et modification d’articles, plan H2, FAQ, scores SEO/GEO, aperçu Google et page
+
+## V1 — cohérence du prototype (fait)
+- Édition complète d'un dossier (contact, logement, qualification, acquisition/UTM) via panneau au crayon.
+- Prochaines actions partagées (créer, modifier, terminer, retards) reprises dans « Ma journée ».
+- Qualification : filtres date/source/service/statut, champs modifiables, grille d'éligibilité persistée, action obligatoire, motif d'abandon.
+- Pipeline en 9 étapes identiques entre fiche dossier, Kanban et tableaux de bord.
+- Préremplissage du prospect courant pour devis, vente, perte et rendez-vous.
+- Devis & ventes : onglets Devis / Ventes / Pertes avec relance, motif, concurrent, commentaire.
+- Recherche globale (nom, téléphone, email, adresse, ville, ID, référence devis) et centre de notifications.
+- Paramètres : désactiver/restaurer ; médiathèque : renommer, archiver, rattacher, télécharger, supprimer.
+- Journal filtrable ; détail d'erreur d'import avec données reçues, historique, Réessayer/Résoudre.
+- Tableau de bord : filtres service, commercial, source et mention « Données de démonstration ».

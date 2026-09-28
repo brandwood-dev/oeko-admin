@@ -4,14 +4,17 @@ import { Archive, ArchiveRestore, Calendar, Check, ChevronRight, FileText, Mail,
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { OekoLeadEditDialog, OekoTaskPanel } from './oeko-lead-edit';
 import { useOekoDemo } from '@/lib/oeko-demo';
 import { OWNERS, type Lead } from '@/lib/oeko-data';
 
-const stages = ['Nouveau', 'Qualifié', 'RDV planifié', 'Devis envoyé', 'Vente'];
+
+const stages = ['Qualifié', 'Commercial attribué', 'À rappeler', 'RDV planifié', 'Devis à faire', 'Devis envoyé', 'À relancer', 'Vente'];
 const stageIndex = (s: string) => {
-  const map: Record<string, number> = { 'Nouveau': 0, 'À qualifier': 0, 'Qualifié': 1, 'Commercial attribué': 1, 'À rappeler': 1, 'RDV planifié': 2, 'Rendez-vous': 2, 'Devis à faire': 2, 'Devis envoyé': 3, 'À relancer': 3, 'Vente': 4, 'Signé': 4 };
+  const map: Record<string, number> = { 'Nouveau': 0, 'À qualifier': 0, 'Qualifié': 0, 'Commercial attribué': 1, 'À rappeler': 2, 'RDV planifié': 3, 'Rendez-vous': 3, 'Devis à faire': 4, 'Devis envoyé': 5, 'À relancer': 6, 'Vente': 7, 'Signé': 7 };
   return map[s] ?? 0;
 };
+
 const tabs = ['Activité', 'Détails', 'Devis & ventes', 'Documents'] as const;
 const docKinds = ['Devis', 'Photos', 'Aides', 'Facture', 'Autre'];
 
@@ -24,7 +27,7 @@ function Card({ title, action, children }: { title: string; action?: React.React
 
 export function OekoLeadRecord({ lead, notify }: { lead: Lead; notify: (m: string) => void }) {
   const navigate = useNavigate();
-  const { notes, addNote, updateLead, rdvList, addRdv, quoteList, docs, addDoc, events, addEvent } = useOekoDemo();
+  const { notes, addNote, updateLead, rdvList, addRdv, quoteList, docs, addDoc, events, addEvent, setPrefillLeadId } = useOekoDemo();
   const [tab, setTab] = useState<(typeof tabs)[number]>('Activité');
   const [kind, setKind] = useState('Note');
   const [text, setText] = useState('');
@@ -32,6 +35,9 @@ export function OekoLeadRecord({ lead, notify }: { lead: Lead; notify: (m: strin
   const [time, setTime] = useState('');
   const [docName, setDocName] = useState('');
   const [docKind, setDocKind] = useState('Devis');
+  const [editOpen, setEditOpen] = useState(false);
+  const goPrefilled = (item: string) => { setPrefillLeadId(lead.id); navigate({ to: '/$section/$item', params: { section: item === 'rdv' ? 'planning' : 'devis', item: item === 'rdv' ? 'nouveau' : item } }); };
+
   const current = stageIndex(lead.status);
   const archived = lead.status === 'Archivé' || lead.archived;
   const setStatus = (status: string) => { updateLead(lead.id, { status, archived: status === 'Archivé' }, 'A modifié le statut d’un dossier'); addEvent({ leadId: lead.id, kind: 'Statut', title: `Statut : ${status}`, body: '', who: 'Alexandre Martin' }); notify(`Statut : ${status}.`); };
@@ -68,7 +74,8 @@ export function OekoLeadRecord({ lead, notify }: { lead: Lead; notify: (m: strin
         <div className="flex flex-wrap gap-2">
           <Button size="sm" variant="outline" asChild><a href={`tel:${lead.phone.replaceAll(' ', '')}`}><Phone size={15} /> Appeler</a></Button>
           <Button size="sm" variant="outline" asChild><a href={`mailto:${lead.email}`}><Mail size={15} /> Email</a></Button>
-          <Button size="sm" variant="outline" onClick={() => navigate({ to: '/$section/$item', params: { section: 'devis', item: 'nouveau' } })}><FileText size={15} /> Créer un devis</Button>
+          <Button size="sm" variant="outline" onClick={() => goPrefilled('nouveau')}><FileText size={15} /> Créer un devis</Button>
+          <Button size="sm" variant="outline" onClick={() => goPrefilled('rdv')}><Calendar size={15} /> Créer un rendez-vous</Button>
           {archived
             ? <Button size="sm" variant="ghost" onClick={() => setStatus('Qualifié')}><ArchiveRestore size={15} /> Restaurer</Button>
             : <Button size="sm" variant="ghost" onClick={() => setStatus('Archivé')}><Archive size={15} /> Archiver</Button>}
@@ -88,8 +95,8 @@ export function OekoLeadRecord({ lead, notify }: { lead: Lead; notify: (m: strin
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-2 px-1 text-xs"><span className="text-muted-foreground">Autre issue :</span>
         {['À rappeler', 'Nurserie', 'Inexploitable', 'Abandon'].map(s => <button key={s} type="button" onClick={() => setStatus(s)} className={`rounded-full border px-3 py-1 ${lead.status === s ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:border-primary'}`}>{s}</button>)}
-        <button type="button" onClick={() => navigate({ to: '/$section/$item', params: { section: 'devis', item: 'vente' } })} className="rounded-full border border-border px-3 py-1 hover:border-primary">Enregistrer la vente</button>
-        <button type="button" onClick={() => navigate({ to: '/$section/$item', params: { section: 'devis', item: 'perte' } })} className="rounded-full border border-border px-3 py-1 hover:border-primary">Déclarer perdu</button>
+        <button type="button" onClick={() => goPrefilled('vente')} className="rounded-full border border-border px-3 py-1 hover:border-primary">Enregistrer la vente</button>
+        <button type="button" onClick={() => goPrefilled('perte')} className="rounded-full border border-border px-3 py-1 hover:border-primary">Déclarer perdu</button>
         {current < stages.length - 1 && <Button size="sm" className="ml-auto" onClick={() => setStatus(stages[current + 1]!)}>Étape suivante <ChevronRight size={14} /></Button>}
       </div>
     </div>
@@ -118,7 +125,7 @@ export function OekoLeadRecord({ lead, notify }: { lead: Lead; notify: (m: strin
             <div><h4 className="mb-3 text-xs font-bold uppercase text-muted-foreground">Devis rattachés</h4>
               {leadQuotes.length ? <ul className="divide-y divide-border rounded-lg border border-border">{leadQuotes.map(q => <li key={q.ref}><Link to="/$section/$item" params={{ section: 'devis', item: q.ref }} className="flex flex-wrap items-center gap-x-4 gap-y-1 p-3 text-sm hover:bg-muted/50"><span className="font-bold text-primary">{q.ref}</span><span>{q.service}</span><span className="text-muted-foreground">{q.date}</span><span className="ml-auto font-semibold tabular-nums">{q.total}</span><span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold">{q.status}</span></Link></li>)}</ul>
                 : <p className="text-sm text-muted-foreground">Aucun devis pour ce dossier.</p>}
-              <Button size="sm" variant="outline" className="mt-3" onClick={() => navigate({ to: '/$section/$item', params: { section: 'devis', item: 'nouveau' } })}><Plus size={15} /> Nouveau devis</Button>
+              <Button size="sm" variant="outline" className="mt-3" onClick={() => goPrefilled('nouveau')}><Plus size={15} /> Nouveau devis</Button>
             </div>
             <div><h4 className="mb-3 text-xs font-bold uppercase text-muted-foreground">Rendez-vous</h4>
               {leadRdvs.length ? <ul className="divide-y divide-border rounded-lg border border-border">{leadRdvs.map(r => <li key={r.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 p-3 text-sm"><span className="font-semibold">{['Lun. 21', 'Mar. 22', 'Mer. 23', 'Jeu. 24', 'Ven. 25', 'Sam. 26', 'Dim. 27'][r.day]}</span><span className="tabular-nums text-muted-foreground">{String(Math.floor(r.start)).padStart(2, '0')}h{String(Math.round((r.start % 1) * 60)).padStart(2, '0')}</span><span>{r.project}</span><span className="ml-auto text-xs">{r.owner}</span><span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold">{r.status}</span></li>)}</ul>
@@ -138,10 +145,11 @@ export function OekoLeadRecord({ lead, notify }: { lead: Lead; notify: (m: strin
       </div>
 
       <aside className="space-y-5">
-        <Card title="Contact" action={<button aria-label="Modifier le contact" className="text-muted-foreground hover:text-primary"><Pencil size={14} /></button>}>
+        <Card title="Contact" action={<button aria-label="Modifier le dossier" onClick={() => setEditOpen(true)} className="text-muted-foreground hover:text-primary"><Pencil size={14} /></button>}>
           <dl><Row label="Téléphone" value={lead.phone} /><Row label="Email" value={lead.email} /><Row label="Adresse" value={lead.address} /></dl>
         </Card>
-        <Card title="Prochaine action">
+        <OekoTaskPanel lead={lead} notify={notify} />
+        <Card title="Planifier une visite">
           <p className="text-sm font-semibold">{lead.next}</p>
           <div className="mt-3 grid grid-cols-2 gap-2"><Input type="date" aria-label="Date" value={date} onChange={e => setDate(e.target.value)} className="h-9" /><Input type="time" aria-label="Heure" value={time} onChange={e => setTime(e.target.value)} className="h-9" /></div>
           <Button size="sm" className="mt-3 w-full" onClick={schedule}><Calendar size={15} /> Planifier la visite</Button>
@@ -158,5 +166,6 @@ export function OekoLeadRecord({ lead, notify }: { lead: Lead; notify: (m: strin
         </Card>
       </aside>
     </div>
+    <OekoLeadEditDialog lead={lead} open={editOpen} onClose={() => setEditOpen(false)} notify={notify} />
   </div>;
 }
