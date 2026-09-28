@@ -84,9 +84,43 @@ export function OekoSubpage({section,item,wide=false}:{section:string;item:strin
       navigate({to:`/dossiers/${id}`});
       return;
     }
-    const recordSection = section === 'devis' && (item === 'vente' || item === 'perte') ? item : section;
-    const recordTitle = String(data.get('Titre') || data.get('Nom') || data.get('Référence') || data.get('Prospect') || (recordSection==='vente'?'Vente enregistrée':recordSection==='perte'?'Perte enregistrée':'Sans titre'));
+    const target = pickLead(String(data.get('Prospect') || ''));
+    if (section === 'planning') {
+      if (!target) { notify('Sélectionnez un prospect.'); return; }
+      const type = String(data.get('Type') || 'Visite technique');
+      const kind = type.startsWith('Appel') ? 'appel' as const : type.startsWith('Présentation') ? 'devis' as const : 'visite' as const;
+      const iso = String(data.get('Date') || '');
+      const dayNum = Number(iso.slice(8, 10));
+      const day = Math.min(Math.max((dayNum || 25) - 21, 0), 6);
+      const [hh, mm] = String(data.get('Heure') || '09:00').split(':');
+      const start = Number(hh) + Number(mm ?? 0) / 60;
+      const dur = { '30 min': 0.5, '1 heure': 1, '1 h 30': 1.5, '2 heures': 2 }[String(data.get('Durée') || '1 heure')] ?? 1;
+      addRdv({ day, start, end: Math.min(start + dur, 19), kind, client: target.name, lead: target.id, city: target.city, dep: target.zip.slice(0, 2), address: String(data.get('Adresse') || `${target.address}, ${target.zip} ${target.city}`), phone: target.phone, owner: String(data.get('Commercial') || target.owner), project: target.service, status: 'Confirmé', report: String(data.get('Commentaire') || '') });
+      updateLead(target.id, { status: 'RDV planifié', next: `${type} le ${iso || 'à confirmer'}` });
+      navigate({ to: '/planning' });
+      return;
+    }
+    if (item === 'vente' || item === 'perte') {
+      if (!target) { notify('Sélectionnez un prospect.'); return; }
+      const comment = String(data.get('Commentaire') || '');
+      if (item === 'vente') {
+        const amount = `${Number(data.get('Montant') || 0).toLocaleString('fr-FR')} €`;
+        updateLead(target.id, { status: 'Vente', saleAmount: amount, next: 'Lancer le chantier' }, 'A enregistré une vente');
+        addEvent({ leadId: target.id, kind: 'Vente', title: `Vente signée · ${amount}`, body: comment, who: target.owner });
+        const linked = String(data.get('Devis concerné') || '');
+        if (linked) updateQuote(linked, { status: 'Accepté' });
+      } else {
+        const reason = String(data.get('Motif') || 'Autre');
+        updateLead(target.id, { status: 'Perdu', lossReason: reason, competitor: String(data.get('Concurrent') || ''), next: 'Aucune action' }, 'A enregistré une perte');
+        addEvent({ leadId: target.id, kind: 'Perte', title: `Dossier perdu · ${reason}`, body: comment, who: target.owner });
+      }
+      navigate({ to: `/dossiers/${target.id}` });
+      return;
+    }
+    const recordSection = section;
+    const recordTitle = String(data.get('Titre') || data.get('Nom') || data.get('Référence') || data.get('Prospect') || 'Sans titre');
     addEntry({section: recordSection,title:recordTitle,detail:section==='devis' ? `${String(data.get('Prospect') || '')} · ${String(data.get('Service') || '')} · ${String(data.get('Montant HT') || '')} €` : String(data.get('Catégorie') || data.get('Service') || data.get('Ville') || ''),status:override || String(data.get('Statut') || 'Enregistré'),date:new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'short',year:'numeric'}).format(new Date())});
+    if (section === 'devis' && quote) updateQuote(quote.ref, { status: override || String(data.get('Statut') || quote.status) });
     navigate({to:back});
   };
      return <div className={`mx-auto px-4 pb-20 pt-7 sm:px-7 lg:px-9 ${wide?'':isLead||isNewLead||(section==='devis'&&item==='nouveau')?'max-w-7xl':'max-w-5xl'}`}>
