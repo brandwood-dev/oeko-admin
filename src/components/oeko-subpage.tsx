@@ -75,7 +75,8 @@ export function OekoSubpage({section,item,wide=false}:{section:string;item:strin
   const saved = entries.find(e=>e.section===section && e.title===item);
   const existing = item !== 'nouveau' && item !== 'vente' && item !== 'perte' ? item : '';
   const quote = section === 'devis' ? quoteList.find(q=>q.ref===item) : undefined;
-  const values: Record<string,string> = existing ? { Titre: existing, Nom: existing, Référence: existing, Prospect: quote?.name ?? existing, Service: quote?.service ?? '', 'Montant HT': quote?.amount.replace(/[^0-9]/g,'') ?? '', 'Montant TTC': quote?.total.replace(/[^0-9]/g,'') ?? '', Statut: quote?.status ?? '' } : prefillLead ? { Prospect: `${prefillLead.name} · ${prefillLead.id}`, Service: prefillLead.service, Adresse: `${prefillLead.address}, ${prefillLead.zip} ${prefillLead.city}`, Commercial: prefillLead.owner, 'Devis concerné': quoteList.find(q => q.leadId === prefillLead.id)?.ref ?? '', Montant: (prefillLead.amount || '').replace(/[^0-9]/g, '') } : {};
+  const values: Record<string,string> = existing ? { Titre: existing, Nom: existing, Référence: existing, Prospect: quote?.name ?? existing, Service: quote?.service ?? '', 'Montant HT': quote?.amount.replace(/[^0-9]/g,'') ?? '', 'Montant TTC': quote?.total.replace(/[^0-9]/g,'') ?? '', Statut: quote?.status ?? '' } : prefillLead ? { Prospect: `${prefillLead.name} · ${prefillLead.id}`, Service: prefillLead.service, Adresse: `${prefillLead.address}, ${prefillLead.zip} ${prefillLead.city}`, Commercial: prefillLead.owner, 'Devis concerné': (() => { const q = quoteList.find(x => x.leadId === prefillLead.id); return q ? `${q.ref} · ${q.total}` : '—'; })(), Montant: (prefillLead.amount || '').replace(/[^0-9]/g, '') } : {};
+  const today = () => new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'short',year:'numeric'}).format(new Date());
   const notify = (message:string) => { setFeedback(message); window.setTimeout(()=>setFeedback(''),3500); };
   const save = (e:FormEvent<HTMLFormElement>, override?:string) => {
     e.preventDefault();
@@ -110,13 +111,14 @@ export function OekoSubpage({section,item,wide=false}:{section:string;item:strin
       const comment = String(data.get('Commentaire') || '');
       if (item === 'vente') {
         const amount = `${Number(data.get('Montant') || 0).toLocaleString('fr-FR')} €`;
-        updateLead(target.id, { status: 'Vente', saleAmount: amount, next: 'Lancer le chantier' }, 'A enregistré une vente');
+        const raw = String(data.get('Devis concerné') || '').split(' · ')[0] ?? '';
+        const linkedRef = raw && raw !== '—' ? raw : '';
+        updateLead(target.id, { status: 'Vente', saleAmount: amount, saleDate: String(data.get('Date') || today()), saleQuote: linkedRef, saleComment: comment, next: 'Lancer le chantier' }, 'A enregistré une vente');
         addEvent({ leadId: target.id, kind: 'Vente', title: `Vente signée · ${amount}`, body: comment, who: target.owner });
-        const linked = String(data.get('Devis concerné') || '').split(' · ')[0] ?? '';
-        if (linked && linked !== '—') updateQuote(linked, { status: 'Accepté' });
+        if (linkedRef) updateQuote(linkedRef, { status: 'Accepté' });
       } else {
         const reason = String(data.get('Motif') || 'Autre');
-        updateLead(target.id, { status: 'Perdu', lossReason: reason, competitor: String(data.get('Concurrent') || ''), next: 'Aucune action' }, 'A enregistré une perte');
+        updateLead(target.id, { status: 'Perdu', lossReason: reason, competitor: String(data.get('Concurrent') || ''), lossComment: comment, lossDate: today(), next: 'Aucune action' }, 'A enregistré une perte');
         addEvent({ leadId: target.id, kind: 'Perte', title: `Dossier perdu · ${reason}`, body: comment, who: target.owner });
       }
       navigate({ to: `/dossiers/${target.id}` });
@@ -125,7 +127,7 @@ export function OekoSubpage({section,item,wide=false}:{section:string;item:strin
     const recordSection = section;
     const recordTitle = String(data.get('Titre') || data.get('Nom') || data.get('Référence') || data.get('Prospect') || 'Sans titre');
     addEntry({section: recordSection,title:recordTitle,detail:section==='devis' ? `${String(data.get('Prospect') || '')} · ${String(data.get('Service') || '')} · ${String(data.get('Montant HT') || '')} €` : String(data.get('Catégorie') || data.get('Service') || data.get('Ville') || ''),status:override || String(data.get('Statut') || 'Enregistré'),date:new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'short',year:'numeric'}).format(new Date())});
-    if (section === 'devis' && quote) updateQuote(quote.ref, { status: override || String(data.get('Statut') || quote.status) });
+    if (section === 'devis' && quote) updateQuote(quote.ref, { status: override || String(data.get('Statut') || quote.status), followUp: String(data.get('Date de relance') || ''), followUpNote: String(data.get('Commentaire de relance') || '') });
     navigate({to:back});
   };
      return <div className={`mx-auto px-4 pb-20 pt-7 sm:px-7 lg:px-9 ${wide?'':isLead||isNewLead||section==='articles'||(section==='devis'&&item==='nouveau')?'max-w-7xl':'max-w-5xl'}`}>

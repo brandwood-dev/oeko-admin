@@ -3,14 +3,15 @@ export type Lead = { id: string; name: string; initials: string; city: string; z
   housing?: string; year?: string; surface?: string; heating?: string; occupancy?: string; income?: string; persons?: string;
   urgency?: string; priority?: string; potential?: string; consent?: boolean;
   channel?: string; campaign?: string; landing?: string; utm?: string; gclid?: string; fbclid?: string;
-  lossReason?: string; competitor?: string; saleAmount?: string; archived?: boolean };
+  lossReason?: string; competitor?: string; saleAmount?: string; archived?: boolean;
+  saleDate?: string; saleQuote?: string; saleComment?: string; lossComment?: string; lossDate?: string };
 export const STATUSES = ['Nouveau','À qualifier','Qualifié','Commercial attribué','À rappeler','RDV planifié','Devis à faire','Devis envoyé','À relancer','Vente','Perdu'];
 export const SIDE_STATUSES = ['Nurserie','Inexploitable','Abandon','Archivé'];
 export const LOSS_REASONS = ['Trop cher','Concurrent','Projet abandonné','Projet reporté','Hors cible','Raison technique','Raison administrative','Impossible à joindre','Autre'];
 export const OWNERS = ['Laurent Moreau','Sophie Martin','Thomas Leroy'];
 export const SOURCES = ['Google Ads','SEO','Meta','Appels','Email','Apporteurs'];
 export type Rdv = { id: string; day: number; start: number; end: number; kind: 'visite'|'devis'|'audit'|'appel'; client: string; lead: string; city: string; dep: string; address: string; phone: string; owner: string; project: string; status: string; report?: string };
-export type Quote = { ref: string; leadId: string; name: string; service: string; amount: string; total: string; date: string; status: string; aid?: string; rest?: string };
+export type Quote = { ref: string; leadId: string; name: string; service: string; amount: string; total: string; date: string; status: string; aid?: string; rest?: string; followUp?: string; followUpNote?: string };
 export type DemoDoc = { id: string; leadId: string; name: string; kind: string; date: string };
 export type LeadEvent = { id: string; leadId: string; kind: string; title: string; body: string; when: string; who: string };
 export type LogEntry = { user: string; action: string; when: string; target: string };
