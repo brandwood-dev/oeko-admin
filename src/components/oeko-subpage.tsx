@@ -42,7 +42,7 @@ const buildGroups = (leadOptions: string[]): Record<string, Group[]> => ({
   ],
   vente: [{ title: 'Vente conclue', fields: [f('Prospect','text',true,leadOptions),f('Date','date'),f('Montant','number'),f('Service','text',false,services),f('Devis concerné'),f('Commentaire','textarea',true)] }],
   perte: [{ title: 'Motif de perte', fields: [f('Prospect','text',true,leadOptions),f('Concurrent'),f('Motif','text',false,['Trop cher','Concurrent','Projet abandonné','Projet reporté','Hors cible','Raison technique','Raison administrative','Impossible à joindre','Autre']),f('Commentaire','textarea',true)] }],
-};
+});
 const labels: Record<string,string> = { articles:'Article',services:'Service',realisations:'Réalisation',planning:'Rendez-vous',devis:'Devis',vente:'Vente',perte:'Perte' };
 const parent: Record<string,View> = { articles:'articles',services:'services',realisations:'realisations',planning:'planning',devis:'devis',vente:'devis',perte:'devis' };
 function Field({ spec, value }: { spec: FieldSpec; value?: string | undefined }) {
