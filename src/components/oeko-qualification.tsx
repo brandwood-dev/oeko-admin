@@ -17,6 +17,7 @@ const URGENCY = ['Immédiate', 'Sous 3 mois', 'Sous 6 mois', 'Plus de 6 mois', '
 const PRIORITY = ['Haute', 'Normale', 'Basse'];
 const POTENTIAL = ['Élevé', 'Moyen', 'Faible'];
 const DATES = ['Toutes les dates', 'Aujourd’hui', 'Hier', 'Cette semaine'];
+const SORTS = ['Score décroissant', 'Plus ancien', 'Sans action récente'];
 const sel = 'h-9 w-full rounded-md border border-border bg-background px-2 text-xs';
 const matchDate = (l: Lead, f: string) => f === DATES[0] || (f === 'Aujourd’hui' ? l.date.startsWith('Aujourd') : f === 'Hier' ? l.date.startsWith('Hier') : l.date.startsWith('Aujourd') || l.date.startsWith('Hier') || l.date.includes('sept'));
 
