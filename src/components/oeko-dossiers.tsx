@@ -6,14 +6,14 @@ import { useOekoDemo } from '@/lib/oeko-demo';
 import type { Lead } from '@/lib/oeko-data';
 
 const stages = [
-  { key: 'Qualifié', label: 'Qualifié', prob: 20 },
-  { key: 'RDV planifié', label: 'Visite technique', prob: 40 },
-  { key: 'Devis envoyé', label: 'Devis présenté', prob: 60 },
-  { key: 'Négociation', label: 'Négociation', prob: 80 },
-  { key: 'Signé', label: 'Signé', prob: 100 },
+  { key: 'Qualifié', label: 'Qualifié', prob: 20, alias: ['Commercial attribué'] },
+  { key: 'RDV planifié', label: 'Visite technique', prob: 40, alias: ['Rendez-vous', 'Devis à faire'] },
+  { key: 'Devis envoyé', label: 'Devis présenté', prob: 60, alias: ['À relancer'] },
+  { key: 'Négociation', label: 'Négociation', prob: 80, alias: [] as string[] },
+  { key: 'Vente', label: 'Signé', prob: 100, alias: ['Signé'] },
 ] as const;
 const aides: Record<string, string> = { 'OE-24091': 'MaPrimeRénov’ en cours', 'OE-24090': 'CEE validé', 'OE-24089': 'Non éligible', 'OE-24088': 'CEE en cours', 'OE-24087': 'À instruire', 'OE-24086': 'MaPrimeRénov’ validé' };
-const stageOf = (s: string) => stages.find(x => x.key === s)?.key ?? (['Nouveau', 'À qualifier', 'À rappeler'].includes(s) ? null : s === 'Qualifié' ? 'Qualifié' : null);
+const stageOf = (s: string) => stages.find(x => x.key === s || (x.alias as readonly string[]).includes(s))?.key ?? null;
 const num = (a: string) => Number(a.replace(/[^0-9]/g, '')) || 0;
 const eur = (n: number) => n.toLocaleString('fr-FR') + ' €';
 
