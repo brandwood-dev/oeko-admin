@@ -40,12 +40,31 @@ export function OekoPlanning() {
   const [kindOn, setKindOn] = useState<Kind[]>(['visite', 'devis', 'audit', 'appel']);
   const [ownerOn, setOwnerOn] = useState<string[]>(owners.map(o => o.name));
   const [open, setOpen] = useState<Rdv | null>(null);
+  const [cancelFor, setCancelFor] = useState<string | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [toast, setToast] = useState('');
   const { rdvList, updateRdv } = useOekoDemo();
-  const list = useMemo(() => offset !== 0 ? [] : rdvList.filter(r => kindOn.includes(r.kind) && ownerOn.includes(r.owner)), [offset, kindOn, ownerOn, rdvList]);
+  const say = (m: string) => { setToast(m); window.setTimeout(() => setToast(''), 3000); };
+  // Chaque période affiche un agenda cohérent : les rendez-vous de démonstration sont répartis
+  // différemment selon la période consultée, aucune période n'est donc vide.
+  const list = useMemo(() => {
+    const base = rdvList.filter(r => kindOn.includes(r.kind) && ownerOn.includes(r.owner));
+    if (offset === 0) return base;
+    const rot = Math.abs(offset);
+    return base.filter((_, i) => (i + rot) % 3 !== 0).map(r => ({ ...r, day: mode === 'Jour' ? r.day : (r.day + rot) % 7 }));
+  }, [offset, mode, kindOn, ownerOn, rdvList]);
   const toggle = <T,>(arr: T[], v: T, set: (a: T[]) => void) => set(arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]);
   const hours = Array.from({ length: H1 - H0 }, (_, i) => H0 + i);
   const shownDays = mode === 'Jour' ? [TODAY] : [0, 1, 2, 3, 4, 5, 6];
-  const label = mode === 'Jour' ? (offset === 0 ? 'Vendredi 25 septembre 2026' : `Jour ${offset > 0 ? '+' : ''}${offset}`) : mode === 'Mois' ? (offset === 0 ? 'Septembre 2026' : `Mois ${offset > 0 ? '+' : ''}${offset}`) : offset === 0 ? '21 – 27 septembre 2026' : `Semaine ${offset > 0 ? '+' : ''}${offset}`;
+  const periodLabel = useMemo(() => {
+    const d = new Date(2026, 8, 21);
+    if (mode === 'Jour') { d.setDate(25 + offset); return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
+    if (mode === 'Mois') { d.setMonth(8 + offset); return d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }); }
+    d.setDate(21 + offset * 7);
+    const e = new Date(d); e.setDate(d.getDate() + 6);
+    return `${d.getDate()} ${d.toLocaleDateString('fr-FR', { month: 'short' })} – ${e.getDate()} ${e.toLocaleDateString('fr-FR', { month: 'short' })} ${e.getFullYear()}`;
+  }, [mode, offset]);
+  const label = periodLabel;
   const current = open ? list.find(r => r.id === open.id) ?? open : null;
 
   const grid = <div className="overflow-x-auto rounded-lg border border-border bg-background">
