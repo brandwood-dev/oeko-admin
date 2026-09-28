@@ -40,12 +40,31 @@ export function OekoPlanning() {
   const [kindOn, setKindOn] = useState<Kind[]>(['visite', 'devis', 'audit', 'appel']);
   const [ownerOn, setOwnerOn] = useState<string[]>(owners.map(o => o.name));
   const [open, setOpen] = useState<Rdv | null>(null);
+  const [cancelFor, setCancelFor] = useState<string | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [toast, setToast] = useState('');
   const { rdvList, updateRdv } = useOekoDemo();
-  const list = useMemo(() => offset !== 0 ? [] : rdvList.filter(r => kindOn.includes(r.kind) && ownerOn.includes(r.owner)), [offset, kindOn, ownerOn, rdvList]);
+  const say = (m: string) => { setToast(m); window.setTimeout(() => setToast(''), 3000); };
+  // Chaque période affiche un agenda cohérent : les rendez-vous de démonstration sont répartis
+  // différemment selon la période consultée, aucune période n'est donc vide.
+  const list = useMemo(() => {
+    const base = rdvList.filter(r => kindOn.includes(r.kind) && ownerOn.includes(r.owner));
+    if (offset === 0) return base;
+    const rot = Math.abs(offset);
+    return base.filter((_, i) => (i + rot) % 3 !== 0).map(r => ({ ...r, day: mode === 'Jour' ? r.day : (r.day + rot) % 7 }));
+  }, [offset, mode, kindOn, ownerOn, rdvList]);
   const toggle = <T,>(arr: T[], v: T, set: (a: T[]) => void) => set(arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]);
   const hours = Array.from({ length: H1 - H0 }, (_, i) => H0 + i);
   const shownDays = mode === 'Jour' ? [TODAY] : [0, 1, 2, 3, 4, 5, 6];
-  const label = mode === 'Jour' ? (offset === 0 ? 'Vendredi 25 septembre 2026' : `Jour ${offset > 0 ? '+' : ''}${offset}`) : mode === 'Mois' ? (offset === 0 ? 'Septembre 2026' : `Mois ${offset > 0 ? '+' : ''}${offset}`) : offset === 0 ? '21 – 27 septembre 2026' : `Semaine ${offset > 0 ? '+' : ''}${offset}`;
+  const periodLabel = useMemo(() => {
+    const d = new Date(2026, 8, 21);
+    if (mode === 'Jour') { d.setDate(25 + offset); return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
+    if (mode === 'Mois') { d.setMonth(8 + offset); return d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }); }
+    d.setDate(21 + offset * 7);
+    const e = new Date(d); e.setDate(d.getDate() + 6);
+    return `${d.getDate()} ${d.toLocaleDateString('fr-FR', { month: 'short' })} – ${e.getDate()} ${e.toLocaleDateString('fr-FR', { month: 'short' })} ${e.getFullYear()}`;
+  }, [mode, offset]);
+  const label = periodLabel;
   const current = open ? list.find(r => r.id === open.id) ?? open : null;
 
   const grid = <div className="overflow-x-auto rounded-lg border border-border bg-background">
@@ -94,10 +113,26 @@ export function OekoPlanning() {
       <aside role="dialog" aria-label="Détail du rendez-vous" onClick={e => e.stopPropagation()} className="flex h-full w-full max-w-md flex-col overflow-y-auto bg-background shadow-2xl">
         <div className="flex items-start justify-between gap-3 border-b border-border p-5"><div><span className="flex items-center gap-2 text-[11px] font-bold uppercase text-primary"><span className={`size-2 rounded-full ${kinds[current.kind].dot}`} />{kinds[current.kind].label.replace(/s( |$)/g, '$1').trim()}</span><h2 className="mt-2 text-xl font-bold">{current.client}</h2><p className="text-sm text-muted-foreground">{current.project} · Dossier {current.lead}</p></div><Button variant="ghost" size="icon" onClick={() => setOpen(null)} aria-label="Fermer"><X /></Button></div>
         <div className="space-y-5 p-5 text-sm">
-          <div className="flex items-center gap-3"><Clock size={16} className="text-muted-foreground" /><span>{days[current.day]} septembre · {fmt(current.start)} – {fmt(current.end)}</span></div>
+          <div className="flex items-center gap-3"><Clock size={16} className="text-muted-foreground" /><span>{days[current.day]} · {fmt(current.start)} – {fmt(current.end)} · {label}</span></div>
+          <div className="rounded-lg border border-border bg-canvas p-3">
+            <p className="mb-2 text-xs font-bold">Reprogrammer le rendez-vous</p>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="block"><span className="mb-1 block text-[11px] text-muted-foreground">Jour</span><select aria-label="Jour du rendez-vous" value={current.day} onChange={e => { updateRdv(current.id, { day: Number(e.target.value) }); say('Rendez-vous reprogrammé.'); }} className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm">{days.map((d, i) => <option key={d} value={i}>{d}</option>)}</select></label>
+              <label className="block"><span className="mb-1 block text-[11px] text-muted-foreground">Heure de début</span><Input aria-label="Heure de début" type="time" value={`${String(Math.floor(current.start)).padStart(2, '0')}:${String(Math.round((current.start % 1) * 60)).padStart(2, '0')}`} onChange={e => { const [h, m] = e.target.value.split(':').map(Number); const s = (h ?? 9) + (m ?? 0) / 60; updateRdv(current.id, { start: s, end: s + (current.end - current.start) }); say('Nouvel horaire enregistré.'); }} className="h-9" /></label>
+              <label className="block"><span className="mb-1 block text-[11px] text-muted-foreground">Durée</span><select aria-label="Durée" value={current.end - current.start} onChange={e => { updateRdv(current.id, { end: current.start + Number(e.target.value) }); say('Durée mise à jour.'); }} className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm">{[0.5, 1, 1.5, 2, 3].map(d => <option key={d} value={d}>{d < 1 ? '30 min' : `${d} h`}</option>)}</select></label>
+              <label className="block"><span className="mb-1 block text-[11px] text-muted-foreground">Adresse</span><Input aria-label="Adresse du rendez-vous" value={current.address} onChange={e => updateRdv(current.id, { address: e.target.value })} className="h-9" /></label>
+            </div>
+          </div>
           <div className="flex items-start gap-3"><MapPin size={16} className="mt-0.5 text-muted-foreground" /><div><div>{current.address}</div><div className="mt-2 flex gap-2"><Button asChild variant="outline" size="sm"><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(current.address)}`} target="_blank" rel="noreferrer"><MapPin size={14} /> Maps</a></Button><Button asChild variant="outline" size="sm"><a href={`https://waze.com/ul?q=${encodeURIComponent(current.address)}`} target="_blank" rel="noreferrer"><Navigation size={14} /> Waze</a></Button></div></div></div>
           <div className="flex items-center gap-3"><Phone size={16} className="text-muted-foreground" /><a href={`tel:${current.phone.replaceAll(' ', '')}`} className="font-semibold text-primary hover:underline">{current.phone}</a></div>
-          <div><div className="mb-2 text-xs font-semibold text-muted-foreground">Statut du rendez-vous</div><div className="grid grid-cols-2 gap-2">{['Confirmé', 'Effectué', 'Reporté', 'Annulé / Absent'].map(s => <Button key={s} size="sm" variant={current.status === s ? 'default' : 'outline'} onClick={() => updateRdv(current.id, { status: s })}>{s}</Button>)}</div></div>
+          <div><div className="mb-2 text-xs font-semibold text-muted-foreground">Statut du rendez-vous</div><div className="grid grid-cols-2 gap-2">{['Confirmé', 'Effectué', 'Reporté', 'Annulé / Absent'].map(s => <Button key={s} size="sm" variant={current.status === s ? 'default' : 'outline'} onClick={() => { if (s === 'Annulé / Absent') { setCancelFor(current.id); setCancelReason(''); return; } updateRdv(current.id, { status: s }); say(`Rendez-vous marqué « ${s} ».`); }}>{s}</Button>)}</div>
+            {current.reason && <p className="mt-2 text-[11px] text-muted-foreground">Motif enregistré : {current.reason}</p>}
+            {cancelFor === current.id && <div className="mt-3 rounded-md border border-destructive/40 bg-destructive/5 p-3">
+              <p className="text-xs font-bold">Motif d’annulation</p>
+              <select aria-label="Motif d’annulation" value={cancelReason} onChange={e => setCancelReason(e.target.value)} className="mt-2 h-9 w-full rounded-md border border-input bg-background px-2 text-sm"><option value="">Sélectionner un motif…</option>{['Client absent', 'Annulé par le client', 'Report technique', 'Météo', 'Commercial indisponible'].map(o => <option key={o}>{o}</option>)}</select>
+              <div className="mt-2 flex gap-2"><Button size="sm" disabled={!cancelReason} onClick={() => { updateRdv(current.id, { status: 'Annulé / Absent', reason: cancelReason }); setCancelFor(null); say(`Rendez-vous annulé · ${cancelReason}.`); }}>Confirmer l’annulation</Button><Button size="sm" variant="outline" onClick={() => setCancelFor(null)}>Annuler</Button></div>
+            </div>}
+          </div>
           <div><label htmlFor="rdv-owner" className="mb-2 block text-xs font-semibold text-muted-foreground">Commercial</label><select id="rdv-owner" value={current.owner} onChange={e => updateRdv(current.id, { owner: e.target.value })} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">{owners.map(o => <option key={o.name}>{o.name}</option>)}</select></div>
           <div><label htmlFor="rdv-cr" className="mb-2 block text-xs font-semibold text-muted-foreground">Compte-rendu</label><textarea id="rdv-cr" value={current.report ?? ''} onChange={e => updateRdv(current.id, { report: e.target.value })} className="min-h-24 w-full rounded-md border border-input bg-background p-3 text-sm" placeholder="Observations, mesures, points à chiffrer…" /></div>
         </div>

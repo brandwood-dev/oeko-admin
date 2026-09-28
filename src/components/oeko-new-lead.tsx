@@ -40,6 +40,8 @@ export function OekoNewLead() {
   const { leadList, setLeadList, addLog, addEvent } = useOekoDemo();
   const [v, setV] = useState({ civ: 'M.', first: '', last: '', phone: '', email: '', address: '', city: '', zip: '', housing: 'Maison individuelle', year: '1975–2000', surface: '', heating: 'Chaudière fioul', owner: 'Propriétaire occupant', income: 'Modestes', persons: '3', source: 'Google Ads', commercial: 'Non attribué', urgency: 'Sous 3 mois', description: '' });
   const [picked, setPicked] = useState<string[]>([]);
+  const [dupOk, setDupOk] = useState<string | null>(null);
+  const [toast, setToast] = useState('');
   const set = (k: keyof typeof v) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setV({ ...v, [k]: e.target.value });
 
   const budget = trades.filter(t => picked.includes(t.id)).reduce((s, t) => s + t.price, 0);
@@ -55,9 +57,18 @@ export function OekoNewLead() {
   ] as const;
   const score = Math.round(checks.filter(c => c[1]).length / checks.length * 100);
   const valid = !!(v.last && v.phone);
+  const dupBlocked = !!dup && dupOk !== dup.id;
 
-  const create = (plan: boolean) => {
-    if (!valid) return;
+  // Rattache la nouvelle demande au dossier existant, sans créer de doublon.
+  const attachToExisting = () => {
+    if (!dup) return;
+    addEvent({ leadId: dup.id, kind: 'Demande', title: 'Nouvelle demande rattachée au contact existant', body: `${picked.join(' + ') || 'Travaux à définir'} · ${v.description || 'Demande saisie depuis le back-office'}`, who: 'Alexandre Martin' });
+    addLog('A rattaché une demande à un dossier existant', `${dup.name} · ${dup.id}`);
+    navigate({ to: `/dossiers/${dup.id}` });
+  };
+
+  const create = (plan: boolean, newProjectOf?: string) => {
+    if (!valid || (dupBlocked && !newProjectOf)) return;
     const name = `${v.first} ${v.last}`.trim();
     const id = `OE-${Date.now()}`;
     const lead: Lead = { id, name, initials: name.split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase(), city: v.city, zip: v.zip, phone: v.phone, email: v.email, service: picked.join(' + ') || 'À définir', source: v.source, status: 'Nouveau', date: 'Aujourd’hui', owner: v.commercial, amount: `${budget.toLocaleString('fr-FR')} €`, next: plan ? 'Visite technique à planifier' : 'Aucune action', address: v.address, description: v.description || `${v.housing} · ${v.year} · ${v.surface || '?'} m² · ${v.heating} · ${v.owner} · Revenus ${v.income} · ${v.urgency}.`,
@@ -68,8 +79,8 @@ export function OekoNewLead() {
       campaign: v.source === 'Google Ads' ? 'IDF · Rénovation 2026' : '—', landing: '/demande-de-devis',
       utm: `utm_source=${v.source.toLowerCase().replaceAll(' ', '_')}&utm_medium=crm&utm_campaign=saisie_manuelle` };
     setLeadList(prev => [lead, ...prev]);
-    addLog('A créé un dossier', `${name} · ${id}`);
-    addEvent({ leadId: id, kind: 'Création', title: 'Dossier créé depuis le back-office', body: `${lead.service} · ${lead.amount}`, who: 'Alexandre Martin' });
+    addLog(newProjectOf ? 'A créé un nouveau projet pour un contact existant' : 'A créé un dossier', `${name} · ${id}${newProjectOf ? ` · contact ${newProjectOf}` : ''}`);
+    addEvent({ leadId: id, kind: 'Création', title: newProjectOf ? `Nouveau projet du contact ${newProjectOf}` : 'Dossier créé depuis le back-office', body: `${lead.service} · ${lead.amount}`, who: 'Alexandre Martin' });
     navigate({ to: plan ? '/planning/nouveau' : `/dossiers/${id}` });
   };
 
@@ -82,7 +93,20 @@ export function OekoNewLead() {
           <L label="Téléphone *"><Input type="tel" value={v.phone} onChange={set('phone')} placeholder="06 12 34 56 78" /></L>
           <L label="Email"><Input type="email" value={v.email} onChange={set('email')} placeholder="nom@exemple.fr" /></L>
         </div>
-        {dup && <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900"><AlertTriangle size={16} /><span className="flex-1">Doublon possible : <b>{dup.name}</b> ({dup.id} · {dup.city})</span><Button size="sm" variant="outline" type="button" onClick={() => navigate({ to: `/dossiers/${dup.id}` })}>Ouvrir le dossier</Button></div>}
+        {dup && <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+          <div className="flex items-start gap-3"><AlertTriangle size={17} className="mt-0.5 shrink-0" /><div className="min-w-0">
+            <p className="font-bold">Doublon détecté</p>
+            <p className="mt-0.5 text-xs">Un dossier existe déjà pour <b>{dup.name}</b> · {dup.id} · {dup.city} ({dup.zip.slice(0, 2)}) · {dup.phone} · {dup.service}.</p>
+            {dupOk === dup.id && <p className="mt-1 text-xs font-semibold">Création maintenue malgré le doublon.</p>}
+          </div></div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" type="button" onClick={() => navigate({ to: `/dossiers/${dup.id}` })}>Consulter le dossier existant</Button>
+            <Button size="sm" variant="outline" type="button" onClick={attachToExisting}>Rattacher cette demande</Button>
+            <Button size="sm" variant="outline" type="button" onClick={() => create(false, dup.id)}>Nouveau projet pour ce contact</Button>
+            <Button size="sm" variant="outline" type="button" onClick={() => { setDupOk(dup.id); setToast('Doublon ignoré : vous pouvez créer le dossier.'); window.setTimeout(() => setToast(''), 3000); }} disabled={dupOk === dup.id}>Continuer malgré le doublon</Button>
+            <Button size="sm" variant="ghost" type="button" onClick={() => navigate({ to: '/dossiers' })}>Annuler la création</Button>
+          </div>
+        </div>}
       </Card>
 
       <Card icon={<Home size={18} />} title="Logement" step={2}>
@@ -141,11 +165,13 @@ export function OekoNewLead() {
         </div>
         <p className="mt-2 text-[11px] text-muted-foreground">Estimation indicative de démonstration.</p>
         <div className="mt-5 space-y-2">
-          <Button className="w-full" disabled={!valid} onClick={() => create(false)}><Check size={16} /> Créer et ouvrir la fiche</Button>
-          <Button className="w-full" variant="outline" disabled={!valid} onClick={() => create(true)}><CalendarPlus size={16} /> Créer & planifier un RDV</Button>
+          <Button className="w-full" disabled={!valid || dupBlocked} onClick={() => create(false)}><Check size={16} /> Créer et ouvrir la fiche</Button>
+          <Button className="w-full" variant="outline" disabled={!valid || dupBlocked} onClick={() => create(true)}><CalendarPlus size={16} /> Créer & planifier un RDV</Button>
           {!valid && <p className="text-center text-[11px] text-muted-foreground">Nom et téléphone requis</p>}
+          {valid && dupBlocked && <p className="text-center text-[11px] font-semibold text-destructive">Doublon détecté : choisissez une option dans l’étape 1.</p>}
         </div>
       </div>
     </aside>
+    {toast && <div role="status" className="fixed bottom-5 right-5 z-50 rounded bg-primary px-4 py-3 text-xs font-semibold text-primary-foreground shadow-lg">{toast}</div>}
   </div>;
 }
