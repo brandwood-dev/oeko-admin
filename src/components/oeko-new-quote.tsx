@@ -37,7 +37,7 @@ export function OekoNewQuote() {
   const navigate = useNavigate();
   const { leadList, addEntry } = useOekoDemo();
   const [leadId, setLeadId] = useState(leadList[0]?.id ?? '');
-  const [lines, setLines] = useState<Line[]>(() => catalog[0].items.map((l, i) => ({ ...l, id: i })));
+  const [lines, setLines] = useState<Line[]>(() => (catalog[0]?.items ?? []).map((l, i) => ({ ...l, id: i })));
   const [income, setIncome] = useState('Modestes');
   const [cee, setCee] = useState(true);
   const [discount, setDiscount] = useState(0);
