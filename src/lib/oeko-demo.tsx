@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import { leads, quotes, rdvSeed, docSeed, logSeed, type DemoDoc, type Lead, type LeadEvent, type LogEntry, type Quote, type Rdv } from './oeko-data';
+import { leads, quotes, rdvSeed, docSeed, logSeed, taskSeed, notifSeed, type DemoDoc, type Lead, type LeadEvent, type LogEntry, type Notif, type Quote, type Rdv, type Task } from './oeko-data';
+
 import { articleSeed, type Article } from './oeko-articles';
 
 type DemoEntry = { section: string; title: string; detail: string; status: string; date: string };
@@ -40,7 +41,12 @@ type DemoContextValue = {
   log: LogEntry[]; addLog: (action: string, target: string) => void;
   updateLead: (id: string, patch: Partial<Lead>, logAction?: string) => void;
   articleList: Article[]; saveArticle: (article: Article, isNew: boolean) => void;
+  taskList: Task[]; addTask: (task: Omit<Task, 'id' | 'done'>) => void; updateTask: (id: string, patch: Partial<Task>) => void;
+  checkGrid: Record<string, string[]>; toggleCheck: (leadId: string, item: string) => void;
+  notifs: Notif[]; markNotif: (id: string) => void; markAllNotifs: () => void;
+  prefillLeadId: string; setPrefillLeadId: (id: string) => void;
 };
+
 const DemoContext = createContext<DemoContextValue | null>(null);
 
 export function OekoDemoProvider({ children }: { children: ReactNode }) {
