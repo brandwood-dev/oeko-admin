@@ -14,3 +14,5 @@
 - Keep OEKO demo records in the root-level React provider so route-based forms and CRM details retain changes during navigation without a backend.
 - Keep the desktop navigation visibility in the root demo provider so the chosen layout survives page navigation without browser storage.
 - Keep the commercial dashboard in its own presentation component and reuse the department-map component unchanged, so sales refinements do not alter its geographic visualization.
+
+- Toutes les données de démonstration (dossiers, rendez-vous, devis, documents, journal) vivent dans OekoDemoProvider : chaque écran lit et écrit ce même état pour rester cohérent sans backend.
