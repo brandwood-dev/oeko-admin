@@ -37,9 +37,34 @@ export const articles = [
  {title:'Rénover sa toiture avant l’hiver',type:'Actualités',date:'14 sept. 2026',status:'Brouillon',author:'Foued Benali'},
  {title:'Comprendre le DPE de votre maison',type:'Guide',date:'10 sept. 2026',status:'Publié',author:'Émilie Bernard'},
 ];
-export const quotes = [
- {ref:'DEV-2026-084',name:'Nadia Bensalem',service:'Menuiseries',amount:'8 000 €',total:'9 600 €',date:'24 sept. 2026',status:'À relancer'},
- {ref:'DEV-2026-083',name:'Camille Petit',service:'Toiture',amount:'19 000 €',total:'22 800 €',date:'23 sept. 2026',status:'Envoyé'},
- {ref:'DEV-2026-082',name:'Sofia Rahmani',service:'Climatisation',amount:'6 583 €',total:'7 900 €',date:'20 sept. 2026',status:'À préparer'},
- {ref:'DEV-2026-081',name:'Laurent Dubois',service:'PAC',amount:'11 833 €',total:'14 200 €',date:'19 sept. 2026',status:'Accepté'},
+export const quotes: Quote[] = [
+ {ref:'DEV-2026-084',leadId:'OE-24088',name:'Nadia Bensalem',service:'Menuiseries',amount:'8 000 €',total:'9 600 €',date:'24 sept. 2026',status:'À relancer'},
+ {ref:'DEV-2026-083',leadId:'OE-24089',name:'Camille Petit',service:'Toiture',amount:'19 000 €',total:'22 800 €',date:'23 sept. 2026',status:'Envoyé'},
+ {ref:'DEV-2026-082',leadId:'OE-24086',name:'Sofia Rahmani',service:'Climatisation',amount:'6 583 €',total:'7 900 €',date:'20 sept. 2026',status:'À préparer'},
+ {ref:'DEV-2026-081',leadId:'OE-24090',name:'Laurent Dubois',service:'PAC',amount:'11 833 €',total:'14 200 €',date:'19 sept. 2026',status:'Accepté'},
+];
+export const rdvSeed: Rdv[] = [
+  { id: 'R1', day: 0, start: 9.5, end: 11.5, kind: 'visite', client: 'Foued Benali', lead: 'OE-24091', city: 'Créteil', dep: '94', address: '18 rue du Général Leclerc, 94000 Créteil', phone: '06 12 84 35 71', owner: 'Laurent Moreau', project: 'PAC + ITE', status: 'Effectué' },
+  { id: 'R2', day: 0, start: 14, end: 14.5, kind: 'appel', client: 'Marc Lefèvre', lead: 'OE-24087', city: 'Boulogne', dep: '92', address: '33 rue de Sèvres, 92100 Boulogne-Billancourt', phone: '06 28 75 49 32', owner: 'Sophie Martin', project: 'Ravalement', status: 'Effectué' },
+  { id: 'R3', day: 1, start: 10, end: 12, kind: 'audit', client: 'Sofia Rahmani', lead: 'OE-24086', city: 'Cergy', dep: '95', address: '5 allée des Tilleuls, 95000 Cergy', phone: '06 34 92 17 80', owner: 'Sophie Martin', project: 'Climatisation', status: 'Effectué' },
+  { id: 'R4', day: 2, start: 14, end: 15, kind: 'appel', client: 'Nadia Bensalem', lead: 'OE-24088', city: 'Saint-Denis', dep: '93', address: '12 rue Gabriel Péri, 93200 Saint-Denis', phone: '06 55 42 87 19', owner: 'Thomas Leroy', project: 'Menuiseries', status: 'Reporté' },
+  { id: 'R5', day: 2, start: 9, end: 11, kind: 'visite', client: 'Laurent Dubois', lead: 'OE-24090', city: 'Versailles', dep: '78', address: '24 avenue de Paris, 78000 Versailles', phone: '06 73 45 19 08', owner: 'Laurent Moreau', project: 'PAC', status: 'Effectué' },
+  { id: 'R6', day: 3, start: 16, end: 17.5, kind: 'devis', client: 'Laurent Dubois', lead: 'OE-24090', city: 'Versailles', dep: '78', address: '24 avenue de Paris, 78000 Versailles', phone: '06 73 45 19 08', owner: 'Sophie Martin', project: 'PAC', status: 'Effectué' },
+  { id: 'R7', day: 4, start: 9, end: 10.5, kind: 'visite', client: 'Camille Petit', lead: 'OE-24089', city: 'Montreuil', dep: '93', address: '7 rue de la République, 93100 Montreuil', phone: '06 89 24 11 63', owner: 'Laurent Moreau', project: 'Toiture', status: 'Effectué' },
+  { id: 'R8', day: 4, start: 11.5, end: 13, kind: 'devis', client: 'Nadia Bensalem', lead: 'OE-24088', city: 'Saint-Denis', dep: '93', address: '12 rue Gabriel Péri, 93200 Saint-Denis', phone: '06 55 42 87 19', owner: 'Thomas Leroy', project: 'Menuiseries', status: 'Confirmé' },
+  { id: 'R9', day: 4, start: 14.5, end: 16.5, kind: 'visite', client: 'Foued Benali', lead: 'OE-24091', city: 'Meaux', dep: '77', address: '4 rue Saint-Rémy, 77100 Meaux', phone: '06 12 84 35 71', owner: 'Laurent Moreau', project: 'PAC + ITE', status: 'Confirmé' },
+  { id: 'R10', day: 4, start: 16, end: 16.5, kind: 'appel', client: 'Laurent Dubois', lead: 'OE-24090', city: 'Versailles', dep: '78', address: '24 avenue de Paris, 78000 Versailles', phone: '06 73 45 19 08', owner: 'Sophie Martin', project: 'PAC', status: 'Confirmé' },
+  { id: 'R11', day: 5, start: 10, end: 12, kind: 'audit', client: 'Marc Lefèvre', lead: 'OE-24087', city: 'Boulogne', dep: '92', address: '33 rue de Sèvres, 92100 Boulogne-Billancourt', phone: '06 28 75 49 32', owner: 'Thomas Leroy', project: 'Ravalement', status: 'Confirmé' },
+];
+export const docSeed: DemoDoc[] = [
+  { id: 'D1', leadId: 'OE-24088', name: 'Devis DEV-2026-084.pdf', kind: 'Devis', date: '24 sept. 2026' },
+  { id: 'D2', leadId: 'OE-24089', name: 'Photos toiture avant travaux.zip', kind: 'Photos', date: '22 sept. 2026' },
+  { id: 'D3', leadId: 'OE-24090', name: 'Avis d’imposition 2025.pdf', kind: 'Aides', date: '20 sept. 2026' },
+];
+export const logSeed: LogEntry[] = [
+  { user: 'Laurent Moreau', action: 'A qualifié un prospect', when: '25 sept. · 09:42', target: 'Foued Benali · OE-24091' },
+  { user: 'Sophie Martin', action: 'A créé un rendez-vous', when: '25 sept. · 08:51', target: 'Laurent Dubois · OE-24090' },
+  { user: 'Émilie Bernard', action: 'A publié un article', when: '24 sept. · 16:35', target: 'Isolation extérieure : quelles aides ?' },
+  { user: 'Thomas Leroy', action: 'A envoyé un devis', when: '24 sept. · 14:12', target: 'DEV-2026-084' },
+  { user: 'Alexandre Martin', action: 'A modifié un service', when: '23 sept. · 11:30', target: 'Pompe à chaleur' },
 ];
