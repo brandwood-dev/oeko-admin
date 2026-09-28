@@ -134,19 +134,22 @@ export function OekoQualification({ openLead }: { openLead: (l: Lead) => void })
 
     <div className="grid gap-5 lg:grid-cols-[1.1fr_1fr]">
       <div className="overflow-hidden rounded-lg border border-border bg-card">
-        <div className="flex items-center justify-between border-b border-border px-4 py-3 text-xs"><span className="font-bold">File {queue.toLowerCase()}</span><span className="text-muted-foreground">Triée par score · {list.length} leads</span></div>
+        <div className="flex items-center justify-between border-b border-border px-4 py-3 text-xs"><span className="font-bold">File {queue.toLowerCase()}</span><span className="text-muted-foreground">{sortF} · {list.length} leads</span></div>
         {list.length === 0 && <p className="p-8 text-center text-sm text-muted-foreground">Aucun lead ne correspond à ces filtres.</p>}
         <ul className="divide-y divide-border">{list.map(l => {
-          const w = waits[l.id] ?? 30; const late = queue === 'À traiter' && w > 30; const s = score(l);
-          return <li key={l.id}><button onClick={() => setSelectedId(l.id)} className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/60 ${selected?.id === l.id ? 'bg-primary/5 ring-1 ring-inset ring-primary/30' : ''}`}>
+          const w = waits[l.id] ?? 30; const late = w > 60; const s = score(l);
+          return <li key={l.id}><button onClick={() => { setSelectedId(l.id); setErr({}); setReasonFor(null); }} className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/60 ${selected?.id === l.id ? 'bg-primary/5 ring-1 ring-inset ring-primary/30' : ''}`}>
             <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">{l.initials}</div>
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2"><span className="truncate text-sm font-bold">{l.name}</span><span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${sourceColor[l.source] ?? 'bg-muted'}`}>{l.source}</span></div>
+              <div className="flex flex-wrap items-center gap-2"><span className="truncate text-sm font-bold">{l.name}</span><span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${sourceColor[l.source] ?? 'bg-muted'}`}>{l.source}</span>
+                {late && <span className="rounded bg-destructive/10 px-1.5 py-0.5 text-[10px] font-bold text-destructive">En retard</span>}
+                {noAction(l) && <span className="rounded bg-secondary px-1.5 py-0.5 text-[10px] font-bold text-primary">Sans action</span>}
+                {(!l.owner || l.owner === 'Non attribué') && <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-bold">Non attribué</span>}</div>
               <div className="mt-0.5 truncate text-xs text-muted-foreground">{l.service} · {l.city} ({l.zip.slice(0, 2)}) · {l.amount}</div>
             </div>
             <div className="shrink-0 text-right">
               <div className={`text-sm font-bold ${s >= 80 ? 'text-primary' : ''}`}>{s}<span className="text-[10px] text-muted-foreground">/100</span></div>
-              <div className={`mt-0.5 flex items-center justify-end gap-1 text-[10px] font-semibold ${late ? 'text-destructive' : 'text-muted-foreground'}`}><Timer size={11} />{fmtWait(w)}</div>
+              <div className={`mt-0.5 flex items-center justify-end gap-1 text-[10px] font-semibold ${late ? 'text-destructive' : 'text-muted-foreground'}`}><Timer size={11} />Âge {fmtWait(w)}</div>
             </div>
           </button></li>;
         })}</ul>
