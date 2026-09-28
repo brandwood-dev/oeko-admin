@@ -40,8 +40,8 @@ export function OekoPlanning() {
   const [kindOn, setKindOn] = useState<Kind[]>(['visite', 'devis', 'audit', 'appel']);
   const [ownerOn, setOwnerOn] = useState<string[]>(owners.map(o => o.name));
   const [open, setOpen] = useState<Rdv | null>(null);
-  const [statuses, setStatuses] = useState<Record<string, string>>({});
-  const list = useMemo(() => offset !== 0 ? [] : rdvs.map(r => ({ ...r, status: statuses[r.id] ?? r.status })).filter(r => kindOn.includes(r.kind) && ownerOn.includes(r.owner)), [offset, kindOn, ownerOn, statuses]);
+  const { rdvList, updateRdv } = useOekoDemo();
+  const list = useMemo(() => offset !== 0 ? [] : rdvList.filter(r => kindOn.includes(r.kind) && ownerOn.includes(r.owner)), [offset, kindOn, ownerOn, rdvList]);
   const toggle = <T,>(arr: T[], v: T, set: (a: T[]) => void) => set(arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]);
   const hours = Array.from({ length: H1 - H0 }, (_, i) => H0 + i);
   const shownDays = mode === 'Jour' ? [TODAY] : [0, 1, 2, 3, 4, 5, 6];
