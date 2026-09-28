@@ -182,7 +182,8 @@ export function OekoQualification({ openLead }: { openLead: (l: Lead) => void })
           <div className="rounded-md border border-dashed border-border p-3">
             <p className="text-xs font-bold">Prochaine action <span className="font-normal text-destructive">(obligatoire)</span></p>
             <select aria-label="Type d’action" value={taskType} onChange={e => setTaskType(e.target.value)} className={`${sel} mt-2`}>{TASK_TYPES.map(o => <option key={o}>{o}</option>)}</select>
-            <div className="mt-2 grid grid-cols-2 gap-2"><Input aria-label="Date de l’action" type="date" value={taskDate} onChange={e => setTaskDate(e.target.value)} className="h-9" /><Input aria-label="Heure de l’action" type="time" value={taskTime} onChange={e => setTaskTime(e.target.value)} className="h-9" /></div>
+            <div className="mt-2 grid grid-cols-2 gap-2"><Input aria-label="Date de l’action" type="date" value={taskDate} onChange={e => { setTaskDate(e.target.value); setErr(p => ({ ...p, task: undefined })); }} className={`h-9 ${err.task ? 'border-destructive' : ''}`} /><Input aria-label="Heure de l’action" type="time" value={taskTime} onChange={e => { setTaskTime(e.target.value); setErr(p => ({ ...p, task: undefined })); }} className={`h-9 ${err.task ? 'border-destructive' : ''}`} /></div>
+            {err.task && <p role="alert" className="mt-1 text-[11px] font-semibold text-destructive">{err.task}</p>}
             <Textarea aria-label="Commentaire" value={taskNote} onChange={e => setTaskNote(e.target.value)} placeholder="Commentaire d’appel…" className="mt-2 min-h-16" />
             <p className="mt-1 text-[11px] text-muted-foreground">Action actuelle : {selected.next}</p>
           </div>
@@ -190,10 +191,16 @@ export function OekoQualification({ openLead }: { openLead: (l: Lead) => void })
           <div className="grid gap-2 sm:grid-cols-2">
             <Button onClick={qualify}><ShieldCheck size={15} />Qualifier</Button>
             <Button variant="outline" onClick={recall}><AlarmClock size={15} />Fixer un rappel</Button>
-            <Button variant="outline" onClick={() => setStatus('Nurserie', `${selected.name} placé en nurserie`)}><CalendarClock size={15} />Nurserie</Button>
+            <Button variant="outline" onClick={nursery}><CalendarClock size={15} />Nurserie</Button>
             <Button variant="outline" className="text-destructive" onClick={() => discard('Inexploitable')}><Ban size={15} />Inexploitable</Button>
             <Button variant="ghost" className="text-destructive sm:col-span-2" onClick={() => discard('Abandon')}>Déclarer un abandon</Button>
           </div>
+
+          {confirmAct && <div className="rounded-md border border-primary/40 bg-primary/5 p-3">
+            <p className="text-xs font-bold">{confirmAct.title}</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">{confirmAct.text}</p>
+            <div className="mt-2 flex gap-2"><Button size="sm" onClick={() => { confirmAct.run(); setConfirmAct(null); }}>Confirmer</Button><Button size="sm" variant="outline" onClick={() => setConfirmAct(null)}>Annuler</Button></div>
+          </div>}
           <button onClick={() => openLead(selected)} className="flex items-center gap-1 text-xs font-semibold text-primary">Ouvrir la fiche complète <ArrowRight size={13} /></button>
 
           {reasonFor && <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3">
