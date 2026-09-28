@@ -84,20 +84,17 @@ export function OekoNewQuote() {
         <div className="mb-4 flex flex-wrap items-center gap-2"><FileText size={16} className="text-primary"/><h2 className="text-sm font-bold">Ouvrages & prestations</h2>
           <div className="ml-auto flex flex-wrap gap-1.5">{catalog.map(c => <button key={c.trade} type="button" onClick={() => addPack(c.trade)} className="rounded-full border border-border px-3 py-1 text-[11px] font-semibold hover:border-primary hover:text-primary">+ {c.trade.split(' (')[0]}</button>)}</div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] table-fixed text-sm">
-            <thead><tr className="border-b border-border text-left text-[11px] uppercase text-muted-foreground"><th className="w-auto py-2 font-semibold">Désignation</th><th className="w-16 font-semibold">Qté</th><th className="w-16 font-semibold">Unité</th><th className="w-24 font-semibold">PU HT</th><th className="w-20 font-semibold">TVA</th><th className="w-24 text-right font-semibold">Total HT</th><th className="w-8"/></tr></thead>
-            <tbody>{lines.map(l => <tr key={l.id} className="border-b border-border/60">
-              <td className="py-2 pr-2"><Input value={l.label} onChange={e => upd(l.id, { label: e.target.value })} className="h-9"/></td>
-              <td className="pr-2"><Input type="number" value={l.qty} onChange={e => upd(l.id, { qty: Number(e.target.value) })} className="h-9"/></td>
-              <td className="pr-2 text-xs text-muted-foreground">{l.unit}</td>
-              <td className="pr-2"><Input type="number" value={l.price} onChange={e => upd(l.id, { price: Number(e.target.value) })} className="h-9"/></td>
-              <td className="pr-2"><select value={l.vat} onChange={e => upd(l.id, { vat: Number(e.target.value) })} className="h-9 rounded-md border border-input bg-background px-2 text-xs">{[5.5,10,20].map(v => <option key={v} value={v}>{v} %</option>)}</select></td>
-              <td className="text-right font-semibold tabular-nums">{eur(l.qty * l.price)}</td>
-              <td className="pl-2"><button type="button" aria-label="Supprimer la ligne" onClick={() => setLines(p => p.filter(x => x.id !== l.id))} className="text-muted-foreground hover:text-destructive"><Trash2 size={15}/></button></td>
-            </tr>)}</tbody>
-          </table>
-        </div>
+        <div className="divide-y divide-border rounded-lg border border-border">{lines.map(l => <div key={l.id} className="grid gap-2 p-3 sm:grid-cols-[1fr_auto] sm:items-center">
+          <Input value={l.label} onChange={e => upd(l.id, { label: e.target.value })} aria-label="Désignation" className="h-9 font-medium"/>
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <Input type="number" value={l.qty} onChange={e => upd(l.id, { qty: Number(e.target.value) })} aria-label="Quantité" className="h-9 w-20"/>
+            <span className="w-12 text-muted-foreground">{l.unit}</span>
+            <Input type="number" value={l.price} onChange={e => upd(l.id, { price: Number(e.target.value) })} aria-label="Prix unitaire HT" className="h-9 w-24"/>
+            <select value={l.vat} onChange={e => upd(l.id, { vat: Number(e.target.value) })} aria-label="TVA" className="h-9 rounded-md border border-input bg-background px-2">{[5.5,10,20].map(v => <option key={v} value={v}>{v} %</option>)}</select>
+            <span className="ml-auto w-24 text-right text-sm font-semibold tabular-nums">{eur(l.qty * l.price)}</span>
+            <button type="button" aria-label="Supprimer la ligne" onClick={() => setLines(p => p.filter(x => x.id !== l.id))} className="text-muted-foreground hover:text-destructive"><Trash2 size={15}/></button>
+          </div>
+        </div>)}</div>
         <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => setLines(p => [...p, { id: Date.now(), label: 'Nouvelle prestation', unit: 'u', qty: 1, price: 0, vat: 5.5 }])}><Plus size={14}/> Ligne libre</Button>
       </section>
 
