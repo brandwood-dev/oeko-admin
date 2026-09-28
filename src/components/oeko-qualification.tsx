@@ -91,7 +91,7 @@ export function OekoQualification({ openLead }: { openLead: (l: Lead) => void })
   const qualify = () => { if (!validate(true)) return; ask('Qualifier ce lead ?', `${selected!.name} passera en « Qualifié » et sera transmis à ${selected!.owner}, avec l’action ${taskType} le ${taskDate} à ${taskTime}.`, () => { planTask(); setStatus('Qualifié', `${selected!.name} qualifié · transmis à ${selected!.owner}`); }); };
   const recall = () => { if (!validate(false)) return; ask('Programmer un rappel ?', `${selected!.name} passera en « À rappeler » avec un rappel le ${taskDate} à ${taskTime}.`, () => { planTask(); setStatus('À rappeler', `Rappel programmé pour ${selected!.name}`); }); };
   const nursery = () => ask('Placer en nurserie ?', `${selected!.name} sera mis de côté pour un projet non mature. Vous pourrez le réactiver à tout moment.`, () => setStatus('Nurserie', `${selected!.name} placé en nurserie`));
-  const discard = (status: string) => { setErr({}); setReasonFor(status); setReason(LOSS_REASONS[0]!); };
+  const discard = (status: string) => { setErr({}); setConfirmAct(null); setReasonFor(status); setReason(''); };
   const confirmDiscard = () => {
     if (!selected || !reasonFor) return;
     if (!reason) { setErr({ task: 'Sélectionnez un motif.' }); return; }
