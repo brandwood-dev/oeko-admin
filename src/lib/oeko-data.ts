@@ -68,3 +68,27 @@ export const logSeed: LogEntry[] = [
   { user: 'Thomas Leroy', action: 'A envoyé un devis', when: '24 sept. · 14:12', target: 'DEV-2026-084' },
   { user: 'Alexandre Martin', action: 'A modifié un service', when: '23 sept. · 11:30', target: 'Pompe à chaleur' },
 ];
+
+// --- Prochaines actions / tâches (démonstration) ---
+export type Task = { id: string; leadId: string; leadName: string; type: string; date: string; time: string; comment: string; owner: string; done: boolean };
+export const TASK_TYPES = ['Appel', 'Rappel', 'Visite technique', 'Présentation de devis', 'Relance devis', 'Document aides', 'Email'];
+export const taskSeed: Task[] = [
+  { id: 'T1', leadId: 'OE-24087', leadName: 'Marc Lefèvre', type: 'Appel', date: '2026-09-26', time: '09:00', comment: 'Premier contact · ravalement façade', owner: 'Sophie Martin', done: false },
+  { id: 'T2', leadId: 'OE-24089', leadName: 'Camille Petit', type: 'Visite technique', date: '2026-09-28', time: '10:00', comment: 'Métrés toiture + relevé isolation', owner: 'Laurent Moreau', done: false },
+  { id: 'T3', leadId: 'OE-24088', leadName: 'Nadia Bensalem', type: 'Relance devis', date: '2026-09-28', time: '11:00', comment: 'Devis DEV-2026-084 envoyé il y a 5 jours', owner: 'Thomas Leroy', done: false },
+  { id: 'T4', leadId: 'OE-24090', leadName: 'Laurent Dubois', type: 'Document aides', date: '2026-09-27', time: '12:00', comment: 'Avis d’imposition manquant · MaPrimeRénov’', owner: 'Sophie Martin', done: false },
+  { id: 'T5', leadId: 'OE-24091', leadName: 'Foued Benali', type: 'Visite technique', date: '2026-09-28', time: '14:30', comment: 'Audit façade ITE · maison de 1985', owner: 'Laurent Moreau', done: false },
+  { id: 'T6', leadId: 'OE-24090', leadName: 'Laurent Dubois', type: 'Rappel', date: '2026-09-28', time: '16:00', comment: 'Choix PAC air-eau à confirmer', owner: 'Sophie Martin', done: false },
+  { id: 'T7', leadId: 'OE-24086', leadName: 'Sofia Rahmani', type: 'Présentation de devis', date: '2026-09-28', time: '17:30', comment: 'Climatisation réversible · 3 pièces', owner: 'Sophie Martin', done: true },
+];
+
+// --- Centre de notifications (démonstration) ---
+export type Notif = { id: string; kind: string; title: string; body: string; leadId?: string; when: string; read: boolean };
+export const notifSeed: Notif[] = [
+  { id: 'N1', kind: 'Nouveau lead', title: 'Nouveau lead · Foued Benali', body: 'Isolation extérieure · Créteil (94) · Google Ads', leadId: 'OE-24091', when: 'Aujourd’hui · 09:42', read: false },
+  { id: 'N2', kind: 'Lead attribué', title: 'Dossier attribué à Sophie Martin', body: 'Laurent Dubois · Pompe à chaleur · Versailles (78)', leadId: 'OE-24090', when: 'Aujourd’hui · 08:20', read: false },
+  { id: 'N3', kind: 'Rendez-vous proche', title: 'Visite technique dans 1 h', body: 'Camille Petit · Montreuil (93) · 10:00', leadId: 'OE-24089', when: 'Aujourd’hui · 09:00', read: false },
+  { id: 'N4', kind: 'Action en retard', title: 'Action en retard · Marc Lefèvre', body: 'Appel de qualification prévu le 26 sept. à 09:00', leadId: 'OE-24087', when: 'Hier · 09:00', read: false },
+  { id: 'N5', kind: 'Devis à relancer', title: 'Devis DEV-2026-084 à relancer', body: 'Nadia Bensalem · 9 600 € · envoyé il y a 5 jours', leadId: 'OE-24088', when: 'Hier · 14:12', read: true },
+  { id: 'N6', kind: 'Document manquant', title: 'Document manquant · Laurent Dubois', body: 'Avis d’imposition 2025 requis pour MaPrimeRénov’', leadId: 'OE-24090', when: '26 sept. · 17:40', read: true },
+];
