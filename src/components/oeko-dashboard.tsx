@@ -61,10 +61,10 @@ export function OekoDashboard({leadList, openLead, go, newDossier}:{leadList:Lea
     if (sourceF !== 'Toutes les sources' && l.source !== sourceF) return false;
     if (stage === 'Tous') return true;
     if (stage === 'Nouveaux leads') return ['Nouveau','À qualifier','À rappeler'].includes(l.status);
-    if (stage === 'Qualifiés') return ['Qualifié','RDV planifié','Devis envoyé','Signé'].includes(l.status);
+    if (stage === 'Qualifiés') return ['Qualifié','Commercial attribué','RDV planifié','Devis à faire','Devis envoyé','À relancer','Vente','Signé'].includes(l.status);
     if (stage === 'Visites techniques') return l.status === 'RDV planifié';
-    if (stage === 'Devis présentés') return l.status === 'Devis envoyé';
-    return l.status === 'Signé';
+    if (stage === 'Devis présentés') return ['Devis envoyé','À relancer'].includes(l.status);
+    return ['Vente','Signé'].includes(l.status);
   }),[leadList,scope,stage]);
   const highlights = visibleLeads.filter(l => ['Devis envoyé','RDV planifié','Qualifié'].includes(l.status));
   const flow = [{label:'Visites cette semaine',value:'18',sub:'3 aujourd’hui',icon:CalendarDays,view:'planning' as View}, {label:'Devis à relancer',value:'6',sub:'2 sous 48 h',icon:FileText,view:'devis' as View}, {label:'Aides en instruction',value:'12',sub:'MaPrimeRénov’ / CEE',icon:TrendingUp,view:'dossiers' as View}, {label:'Leads non traités',value:'4',sub:'À qualifier',icon:Users,view:'qualification' as View}];
