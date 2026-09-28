@@ -50,16 +50,18 @@ export function OekoQualification({ openLead }: { openLead: (l: Lead) => void })
   const [confirmAct, setConfirmAct] = useState<{ title: string; text: string; run: () => void } | null>(null);
 
   const counts = useMemo(() => leadList.reduce<Record<string, number>>((acc, l) => { const k = queueOf(l.status); acc[k] = (acc[k] ?? 0) + 1; return acc; }, {}), [leadList]);
-  const activeFilters = [dateF !== DATES[0] && dateF, sourceF !== 'Toutes les sources' && sourceF, serviceF !== 'Tous les services' && serviceF, statusF !== 'Tous les statuts' && statusF].filter(Boolean) as string[];
-  const resetFilters = () => { setDateF(DATES[0]!); setSourceF('Toutes les sources'); setServiceF('Tous les services'); setStatusF('Tous les statuts'); setQ(''); };
+  const activeFilters = [dateF !== DATES[0] && dateF, sourceF !== 'Toutes les sources' && sourceF, serviceF !== 'Tous les services' && serviceF, statusF !== 'Tous les statuts' && statusF, sortF !== SORTS[0] && sortF].filter(Boolean) as string[];
+  const resetFilters = () => { setDateF(DATES[0]!); setSourceF('Toutes les sources'); setServiceF('Tous les services'); setStatusF('Tous les statuts'); setSortF(SORTS[0]!); setQ(''); };
+  const noAction = (l: Lead) => !l.next || l.next === 'Aucune action' || l.next.startsWith('Aucune');
   const list = leadList
     .filter(l => queueOf(l.status) === queue
       && `${l.name} ${l.city} ${l.phone} ${l.zip} ${l.email}`.toLowerCase().includes(q.toLowerCase())
       && matchDate(l, dateF)
       && (sourceF === 'Toutes les sources' || l.source === sourceF)
       && (serviceF === 'Tous les services' || l.service === serviceF)
-      && (statusF === 'Tous les statuts' || l.status === statusF))
-    .sort((a, b) => score(b) - score(a));
+      && (statusF === 'Tous les statuts' || l.status === statusF)
+      && (sortF !== 'Sans action récente' || noAction(l)))
+    .sort((a, b) => sortF === 'Plus ancien' ? (waits[b.id] ?? 30) - (waits[a.id] ?? 30) : sortF === 'Sans action récente' ? (waits[b.id] ?? 30) - (waits[a.id] ?? 30) : score(b) - score(a));
   const selected = leadList.find(l => l.id === selectedId) ?? list[0];
   const tick = selected ? checkGrid[selected.id] ?? [] : [];
   const notify = (m: string) => { setToast(m); window.setTimeout(() => setToast(''), 3000); };
@@ -71,17 +73,28 @@ export function OekoQualification({ openLead }: { openLead: (l: Lead) => void })
   };
   const planTask = () => {
     if (!selected) return false;
-    if (!taskDate || !taskTime) { notify('Définissez d’abord la prochaine action (date et heure).'); return false; }
     addTask({ leadId: selected.id, leadName: selected.name, type: taskType, date: taskDate, time: taskTime, comment: taskNote, owner: selected.owner });
     updateLead(selected.id, { next: `${taskType} · ${taskDate} ${taskTime}` });
     setTaskDate(''); setTaskTime(''); setTaskNote('');
     return true;
   };
-  const qualify = () => { if (planTask()) setStatus('Qualifié', `${selected!.name} qualifié · transmis à ${selected!.owner}`); };
-  const recall = () => { if (planTask()) setStatus('À rappeler', `Rappel programmé pour ${selected!.name}`); };
-  const discard = (status: string) => { setReasonFor(status); setReason(LOSS_REASONS[0]!); };
+  // La qualification exige un commercial attribué ET une prochaine action planifiée.
+  const validate = (needOwner: boolean) => {
+    if (!selected) return false;
+    const next: { owner?: string; task?: string } = {};
+    if (needOwner && (!selected.owner || selected.owner === 'Non attribué')) next.owner = 'Attribuez un commercial avant de qualifier ce lead.';
+    if (!taskDate || !taskTime) next.task = 'Renseignez la date et l’heure de la prochaine action.';
+    setErr(next);
+    return Object.keys(next).length === 0;
+  };
+  const ask = (title: string, text: string, run: () => void) => setConfirmAct({ title, text, run });
+  const qualify = () => { if (!validate(true)) return; ask('Qualifier ce lead ?', `${selected!.name} passera en « Qualifié » et sera transmis à ${selected!.owner}, avec l’action ${taskType} le ${taskDate} à ${taskTime}.`, () => { planTask(); setStatus('Qualifié', `${selected!.name} qualifié · transmis à ${selected!.owner}`); }); };
+  const recall = () => { if (!validate(false)) return; ask('Programmer un rappel ?', `${selected!.name} passera en « À rappeler » avec un rappel le ${taskDate} à ${taskTime}.`, () => { planTask(); setStatus('À rappeler', `Rappel programmé pour ${selected!.name}`); }); };
+  const nursery = () => ask('Placer en nurserie ?', `${selected!.name} sera mis de côté pour un projet non mature. Vous pourrez le réactiver à tout moment.`, () => setStatus('Nurserie', `${selected!.name} placé en nurserie`));
+  const discard = (status: string) => { setErr({}); setReasonFor(status); setReason(LOSS_REASONS[0]!); };
   const confirmDiscard = () => {
     if (!selected || !reasonFor) return;
+    if (!reason) { setErr({ task: 'Sélectionnez un motif.' }); return; }
     updateLead(selected.id, { status: reasonFor, lossReason: reason, next: 'Aucune action' }, 'A écarté un lead');
     addEvent({ leadId: selected.id, kind: 'Qualification', title: `${reasonFor} · ${reason}`, body: taskNote, who: 'Alexandre Martin' });
     notify(`${selected.name} · ${reasonFor} (${reason}).`);
