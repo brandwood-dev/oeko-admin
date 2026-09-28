@@ -35,7 +35,7 @@ const sel = 'h-10 w-full rounded-md border border-input bg-background px-3 text-
 
 export function OekoNewQuote() {
   const navigate = useNavigate();
-  const { leadList, addEntry } = useOekoDemo();
+  const { leadList, addEntry, addQuote, updateLead } = useOekoDemo();
   const [leadId, setLeadId] = useState(leadList[0]?.id ?? '');
   const [lines, setLines] = useState<Line[]>(() => (catalog[0]?.items ?? []).map((l, i) => ({ ...l, id: i })));
   const [income, setIncome] = useState('Modestes');
