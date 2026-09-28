@@ -103,7 +103,25 @@ export function OekoDemoProvider({ children }: { children: ReactNode }) {
     addLog(isNew ? (a.status === 'Publié' ? 'A publié un article' : 'A créé un brouillon d’article') : 'A modifié un article', a.title);
   };
 
-  return <DemoContext.Provider value={{ leadList, setLeadList, notes, addNote, entries, addEntry, desktopMenuOpen, setDesktopMenuOpen, rdvList, addRdv, updateRdv, quoteList, addQuote, updateQuote, docs, addDoc, events, addEvent, log, addLog, updateLead, articleList, saveArticle }}>{children}</DemoContext.Provider>;
+  const addTask: DemoContextValue['addTask'] = t => {
+    setTaskList(p => [...p, { ...t, id: uid('T'), done: false }]);
+    addEvent({ leadId: t.leadId, kind: 'Action', title: `Action planifiée · ${t.type}`, body: `${t.date} ${t.time} · ${t.comment}`, who: t.owner });
+    addLog('A planifié une prochaine action', `${t.leadName} · ${t.type}`);
+  };
+  const updateTask: DemoContextValue['updateTask'] = (id, patch) => {
+    setTaskList(p => p.map(t => t.id === id ? { ...t, ...patch } : t));
+    const t = taskList.find(x => x.id === id);
+    if (t) addLog(patch.done ? 'A terminé une action' : 'A modifié une action', `${t.leadName} · ${patch.type ?? t.type}`);
+  };
+  const toggleCheck: DemoContextValue['toggleCheck'] = (leadId, item) => setCheckGrid(p => {
+    const cur = p[leadId] ?? [];
+    return { ...p, [leadId]: cur.includes(item) ? cur.filter(x => x !== item) : [...cur, item] };
+  });
+  const markNotif = (id: string) => setNotifs(p => p.map(n => n.id === id ? { ...n, read: true } : n));
+  const markAllNotifs = () => setNotifs(p => p.map(n => ({ ...n, read: true })));
+
+  return <DemoContext.Provider value={{ leadList, setLeadList, notes, addNote, entries, addEntry, desktopMenuOpen, setDesktopMenuOpen, rdvList, addRdv, updateRdv, quoteList, addQuote, updateQuote, docs, addDoc, events, addEvent, log, addLog, updateLead, articleList, saveArticle, taskList, addTask, updateTask, checkGrid, toggleCheck, notifs, markNotif, markAllNotifs, prefillLeadId, setPrefillLeadId }}>{children}</DemoContext.Provider>;
+
 }
 
 export function useOekoDemo() {
