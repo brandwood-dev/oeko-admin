@@ -1,5 +1,19 @@
 export type View = 'dashboard' | 'qualification' | 'dossiers' | 'journee' | 'planning' | 'devis' | 'articles' | 'services' | 'realisations' | 'mediatheque' | 'marketing' | 'seo' | 'performance' | 'parametres' | 'integrations' | 'journal';
-export type Lead = { id: string; name: string; initials: string; city: string; zip: string; phone: string; email: string; service: string; source: string; status: string; date: string; owner: string; amount: string; next: string; address: string; description: string };
+export type Lead = { id: string; name: string; initials: string; city: string; zip: string; phone: string; email: string; service: string; source: string; status: string; date: string; owner: string; amount: string; next: string; address: string; description: string;
+  housing?: string; year?: string; surface?: string; heating?: string; occupancy?: string; income?: string; persons?: string;
+  urgency?: string; priority?: string; potential?: string; consent?: boolean;
+  channel?: string; campaign?: string; landing?: string; utm?: string; gclid?: string; fbclid?: string;
+  lossReason?: string; competitor?: string; saleAmount?: string; archived?: boolean };
+export const STATUSES = ['Nouveau','À qualifier','Qualifié','Commercial attribué','À rappeler','RDV planifié','Devis à faire','Devis envoyé','À relancer','Vente','Perdu'];
+export const SIDE_STATUSES = ['Nurserie','Inexploitable','Abandon','Archivé'];
+export const LOSS_REASONS = ['Trop cher','Concurrent','Projet abandonné','Projet reporté','Hors cible','Raison technique','Raison administrative','Impossible à joindre','Autre'];
+export const OWNERS = ['Laurent Moreau','Sophie Martin','Thomas Leroy'];
+export const SOURCES = ['Google Ads','SEO','Meta','Appels','Email','Apporteurs'];
+export type Rdv = { id: string; day: number; start: number; end: number; kind: 'visite'|'devis'|'audit'|'appel'; client: string; lead: string; city: string; dep: string; address: string; phone: string; owner: string; project: string; status: string; report?: string };
+export type Quote = { ref: string; leadId: string; name: string; service: string; amount: string; total: string; date: string; status: string; aid?: string; rest?: string };
+export type DemoDoc = { id: string; leadId: string; name: string; kind: string; date: string };
+export type LeadEvent = { id: string; leadId: string; kind: string; title: string; body: string; when: string; who: string };
+export type LogEntry = { user: string; action: string; when: string; target: string };
 export const leads: Lead[] = [
   {id:'OE-24091',name:'Foued Benali',initials:'FB',city:'Créteil',zip:'94000',phone:'06 12 84 35 71',email:'foued.benali@exemple.fr',service:'Isolation extérieure',source:'Google Ads',status:'À qualifier',date:'Aujourd’hui, 09:42',owner:'Laurent Moreau',amount:'18 500 €',next:'Appel · Aujourd’hui 14:30',address:'18 rue du Général Leclerc',description:'Souhaite isoler la façade de sa maison des années 80 avant l’hiver.'},
   {id:'OE-24090',name:'Laurent Dubois',initials:'LD',city:'Versailles',zip:'78000',phone:'06 73 45 19 08',email:'laurent.dubois@exemple.fr',service:'Pompe à chaleur',source:'SEO',status:'À rappeler',date:'Aujourd’hui, 08:15',owner:'Sophie Martin',amount:'14 200 €',next:'Rappel · Aujourd’hui 16:00',address:'24 avenue de Paris',description:'Remplacement d’une ancienne chaudière fioul par une pompe à chaleur air-eau.'},
