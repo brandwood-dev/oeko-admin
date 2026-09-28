@@ -11,9 +11,10 @@ import { OWNERS, type Lead } from '@/lib/oeko-data';
 
 const stages = ['Qualifié', 'Commercial attribué', 'À rappeler', 'RDV planifié', 'Devis à faire', 'Devis envoyé', 'À relancer', 'Vente'];
 const stageIndex = (s: string) => {
-  const map: Record<string, number> = { 'Nouveau': 0, 'À qualifier': 0, 'Qualifié': 1, 'Commercial attribué': 1, 'À rappeler': 1, 'RDV planifié': 2, 'Rendez-vous': 2, 'Devis à faire': 2, 'Devis envoyé': 3, 'À relancer': 3, 'Vente': 4, 'Signé': 4 };
+  const map: Record<string, number> = { 'Nouveau': 0, 'À qualifier': 0, 'Qualifié': 0, 'Commercial attribué': 1, 'À rappeler': 2, 'RDV planifié': 3, 'Rendez-vous': 3, 'Devis à faire': 4, 'Devis envoyé': 5, 'À relancer': 6, 'Vente': 7, 'Signé': 7 };
   return map[s] ?? 0;
 };
+
 const tabs = ['Activité', 'Détails', 'Devis & ventes', 'Documents'] as const;
 const docKinds = ['Devis', 'Photos', 'Aides', 'Facture', 'Autre'];
 
